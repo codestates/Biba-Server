@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./app"
+    "start": "nodemon --exec 'node -r ts-node/register' app.ts"
   },
   "dependencies": {
     "@types/dotenv": "^8.2.0",
