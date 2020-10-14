@@ -1,4 +1,3 @@
-//declare Express
 import * as express from 'express';
 import * as morgan from 'morgan';
 
