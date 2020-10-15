@@ -1,7 +1,7 @@
-require('dotenv').config()
+require('dotenv').config(); // no-var-requires
 
 module.exports = {
-    "development": {
+  "development": {
     "username": "root",
     "password": process.env.DB_PD,
     "database": "Biba",
