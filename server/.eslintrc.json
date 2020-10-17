@@ -17,17 +17,12 @@
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": "./Biba-Server/server/tsconfig.json",
+    "project": "./server/tsconfig.json",
     "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "plugins": [
-    "@typescript-eslint"
-  ],
-  "ignorePatterns": [
-    "dist/",
-    "node_modules/"
-  ],
+  "plugins": ["@typescript-eslint"],
+  "ignorePatterns": ["dist/", "node_modules/"],
   "rules": {
     "@typescript-eslint/no-non-null-assertion": "off"
   }

@@ -1,22 +1,21 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model, DataTypes, HasManyGetAssociationsMixin } from 'sequelize';
 import { dbType } from './index';
+import Beer from './beers';
 import { sequelize } from './sequelize';
 
 class Style extends Model {
   public readonly id!: number;
   public style_name!: string;
-  public style_id!: number;
   public readonly createAt!: Date;
   public readonly updateAt!: Date;
+
+  public getBeer!: HasManyGetAssociationsMixin<Beer>;
 }
 
 Style.init(
   {
     style_name: {
       type: DataTypes.STRING,
-    },
-    style_id: {
-      type: DataTypes.INTEGER,
     },
   },
   {
@@ -28,6 +27,12 @@ Style.init(
   }
 );
 
-export const associate = (db: dbType) => {};
+export const associate = (db: dbType): void => {
+  db.Style.hasMany(db.Beer, {
+    foreignKey: 'style_id',
+    sourceKey: 'id',
+    as: 'getStyle',
+  });
+};
 
 export default Style;

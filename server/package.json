@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon --exec 'node -r ts-node/register' app.ts"
+    "start": "nodemon --exec 'node -r ts-node/register' app.ts",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && node_modules/typescript/bin/tsc",
+    "migrate": "npm run build && node_modules/.bin/sequelize db:migrate --env development"
   },
   "dependencies": {
     "@types/dotenv": "^8.2.0",
@@ -13,11 +16,13 @@
     "express": "~4.16.1",
     "morgan": "~1.9.1",
     "mysql2": "^2.2.5",
+    "pg": "^8.4.1",
     "sequelize": "^6.3.5",
     "sequelize-cli": "^6.2.0",
-    "typescript": "^4.0.3"
+    "sequelize-typescript": "^1.1.0"
   },
   "devDependencies": {
+    "@types/sequelize": "^4.28.9",
     "@typescript-eslint/eslint-plugin": "^4.4.1",
     "@typescript-eslint/parser": "^4.4.1",
     "dotenv": "^8.2.0",
@@ -26,7 +31,9 @@
     "eslint-plugin-prettier": "^3.1.4",
     "nodemon": "^2.0.4",
     "prettier": "^2.1.2",
+    "sequelize-typescript-migration": "0.0.1-beta.3",
     "ts-node": "^9.0.0",
-    "typescript": "^3.8.3"
+    "tslib": "^2.0.3",
+    "typescript": "^4.0.3"
   }
 }

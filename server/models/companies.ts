@@ -24,6 +24,11 @@ Company.init(
   }
 );
 
-export const associate = (db: dbType) => {};
+export const associate = (db: dbType): void => {
+  db.Company.hasMany(db.Beer, {
+    foreignKey: 'company_id',
+    sourceKey: 'id',
+  });
+};
 
 export default Company;

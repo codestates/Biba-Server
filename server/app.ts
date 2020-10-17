@@ -3,7 +3,7 @@ import * as morgan from 'morgan';
 
 import { sequelize } from './models';
 
-const usersRouter = require('./routes/users');
+import beerRouter from './routes/beerList';
 
 const app = express();
 const port = 4000;
@@ -27,7 +27,7 @@ app.get('/', (req, res) => {
 });
 
 // Router
-app.use('/users', usersRouter);
+app.use('/beer', beerRouter);
 
 app.listen(port, () => {
   console.log(`connected ${port}`);
