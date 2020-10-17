@@ -11,6 +11,7 @@ import Tag, { associate as associateTag } from './tags';
 import User, { associate as associateUser } from './user';
 
 export * from './sequelize';
+
 const db = {
   Beer_seller,
   Beer_tag,
@@ -24,8 +25,8 @@ const db = {
   Tag,
   User,
 };
-export type dbType = typeof db;
 
+export type dbType = typeof db;
 associateBeer_sell(db);
 associateBeer_tag(db);
 associateBeer(db);

@@ -17,7 +17,7 @@
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": "./Biba-Server/server/tsconfig.json",
+    "project": "./server/tsconfig.json",
     "ecmaVersion": 2020,
     "sourceType": "module"
   },
@@ -30,5 +30,8 @@
   ],
   "rules": {
     "@typescript-eslint/no-non-null-assertion": "off"
-  }
+  },
+  "prettier/prettier": ["error", {
+   "endOfLine":"auto"
+  }]
 }
