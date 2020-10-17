@@ -9,18 +9,11 @@ import Style from '../models/styles';
 
 const router = express.Router();
 
-// interface MyObj {
-//   id: number;
-//   beer_name: string;
-//   getComment: string;
-//   rate: number;
-// }
-
 interface FIoo extends Beer {
   [key: string]: any;
 }
 
-// 모든 맥주 리스트 (랜덤하게? 정렬?)
+// 모든 맥주 리스트 (랜덤하게)
 router.get('/list', async (req, res) => {
   //   const where = {};
   //   if (parseInt(req.query.lastId, 10)) {

@@ -36,6 +36,7 @@ export const associate = (db: dbType): void => {
   db.Beer_tag.belongsTo(db.Tag, {
     foreignKey: 'tag_id',
     targetKey: 'id',
+    as: 'getTag',
   });
 };
 
