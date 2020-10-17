@@ -1,46 +1,40 @@
-'use strict';
+import Beer_seller, { associate as associateBeer_sell } from './beer_sellers';
+import Beer_tag, { associate as associateBeer_tag } from './beer_tag';
+import Beer, { associate as associateBeer } from './beers';
+import Comment, { associate as associateComment } from './comments';
+import Company, { associate as associateCompany } from './companies';
+import Country, { associate as associateCountry } from './countries';
+import Report, { associate as associateReport } from './report';
+import Seller, { associate as associateSeller } from './sellers';
+import Style, { associate as associateStyle } from './styles';
+import Tag, { associate as associateTag } from './tags';
+import User, { associate as associateUser } from './user';
 
-const fs = require('fs');
-const path = require('path');
-const Sequelize = require('sequelize');
-const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.js')[env];
-const db = {};
+export * from './sequelize';
 
-let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(
-    config.database,
-    config.username,
-    config.password,
-    config
-  );
-}
+const db = {
+  Beer_seller,
+  Beer_tag,
+  Beer,
+  Comment,
+  Company,
+  Country,
+  Report,
+  Seller,
+  Style,
+  Tag,
+  User,
+};
 
-fs.readdirSync(__dirname)
-  .filter((file) => {
-    return (
-      file.indexOf('.') !== 0 && file !== basename && file.slice(-3) === '.js'
-    );
-  })
-  .forEach((file) => {
-    const model = require(path.join(__dirname, file))(
-      sequelize,
-      Sequelize.DataTypes
-    );
-    db[model.name] = model;
-  });
-
-Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
-});
-
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
-
-// module.exports = db;
+export type dbType = typeof db;
+associateBeer_sell(db);
+associateBeer_tag(db);
+associateBeer(db);
+associateComment(db);
+associateCompany(db);
+associateCountry(db);
+associateReport(db);
+associateSeller(db);
+associateStyle(db);
+associateTag(db);
+associateUser(db);
