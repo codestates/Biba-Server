@@ -14,7 +14,7 @@ class Report extends Model {
 Report.init(
   {
     user_id: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
     },
     beer_name: {
       type: DataTypes.STRING,
@@ -32,6 +32,11 @@ Report.init(
   }
 );
 
-export const associate = (db: dbType) => {};
+export const associate = (db: dbType): void => {
+  db.Report.belongsTo(db.User, {
+    foreignKey: 'user_id',
+    targetKey: 'id',
+  });
+};
 
 export default Report;

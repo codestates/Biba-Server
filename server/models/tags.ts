@@ -24,6 +24,11 @@ Tag.init(
   }
 );
 
-export const associate = (db: dbType) => {};
+export const associate = (db: dbType): void => {
+  db.Tag.hasMany(db.Beer_tag, {
+    foreignKey: 'tag_id',
+    sourceKey: 'id',
+  });
+};
 
 export default Tag;

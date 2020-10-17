@@ -1,11 +1,41 @@
 import * as express from 'express';
 import * as jwt from 'jsonwebtoken';
-
 import User from '../models/user';
 
 const router = express.Router();
 
 // * GET /users/mypage
+
+// * POST /users/checkemail, 이메일 중복 체크
+// client 측에서 email 확인 버튼을 눌렀을 때, server 측에서 유효성 검사 후 send!
+router.post('/checkemail', (req, res) => {
+  const { email } = req.body;
+
+  User.findOne({
+    where: { email }
+  })
+  // TODO: any 말고 사용하는 방법? ts 찾아보기!
+  .then((data: any) => {
+    data ? 
+    res.status(409).json('존재하는 이메일 입니다.') : 
+    res.status(200).json('사용가능한 이메일 입니다.');
+  });
+})
+
+// * POST /users/checknickname, 닉네임 중복 체크
+router.post('/checknickname', (req, res) => {
+  const { nickname } = req.body;
+
+  User.findOne({
+    where: { nickname }
+  })
+  .then((data: any) => {
+    data? 
+    res.status(409).json('존재하는 닉네임 입니다.') :
+    res.status(200).json('사용가능한 닉네임 입니다.');
+    // client작업: true 면 유저네임 수정하기
+  });
+})
 
 // * POST /users/signup
 router.post('/signup', (req, res) => {
@@ -21,7 +51,7 @@ router.post('/signup', (req, res) => {
     User.create({
       email: email,
       nickname: nickname,
-      password: password
+      password: password,
     })
     .then((data: any) => {
       // console.log('data: ', data);

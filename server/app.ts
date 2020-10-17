@@ -9,6 +9,8 @@ import { Request, Response } from 'express';
 import { sequelize } from './models';
 
 dotenv.config();
+import beerRouter from './routes/beerList';
+
 const app = express();
 const port = 4000;
 
@@ -25,12 +27,16 @@ sequelize
     console.log('연결 실패', err);
   });
 
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
+);
 
 app.use('/users', usersRouter);
+// Router
+app.use('/beer', beerRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.status(200).send('Success!');
