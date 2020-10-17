@@ -40,6 +40,15 @@ User.init(
   }
 );
 
-export const associate = (db: dbType) : void => {};
+export const associate = (db: dbType): void => {
+  db.User.hasMany(db.Comment, {
+    foreignKey: 'user_id',
+    sourceKey: 'id',
+  });
+  db.User.hasMany(db.Report, {
+    foreignKey: 'user_id',
+    sourceKey: 'id',
+  });
+};
 
 export default User;

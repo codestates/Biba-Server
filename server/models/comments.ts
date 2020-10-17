@@ -37,6 +37,15 @@ Comment.init(
   }
 );
 
-export const associate = (db: dbType) => {};
+export const associate = (db: dbType): void => {
+  db.Comment.belongsTo(db.User, {
+    foreignKey: 'user_id',
+    targetKey: 'id',
+  });
+  db.Comment.belongsTo(db.Beer, {
+    foreignKey: 'beer_id',
+    targetKey: 'id',
+  });
+};
 
 export default Comment;

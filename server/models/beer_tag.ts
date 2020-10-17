@@ -28,6 +28,16 @@ Beer_tag.init(
   }
 );
 
-export const associate = (db: dbType) => {};
+export const associate = (db: dbType): void => {
+  db.Beer_tag.belongsTo(db.Beer, {
+    foreignKey: 'beer_id',
+    targetKey: 'id',
+  });
+  db.Beer_tag.belongsTo(db.Tag, {
+    foreignKey: 'tag_id',
+    targetKey: 'id',
+    as: 'getTag',
+  });
+};
 
 export default Beer_tag;

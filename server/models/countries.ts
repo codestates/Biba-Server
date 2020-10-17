@@ -24,6 +24,11 @@ Country.init(
   }
 );
 
-export const associate = (db: dbType) => {};
+export const associate = (db: dbType): void => {
+  db.Country.hasMany(db.Beer, {
+    foreignKey: 'country_id',
+    sourceKey: 'id',
+  });
+};
 
 export default Country;
