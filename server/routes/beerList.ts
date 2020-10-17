@@ -2,7 +2,6 @@ import * as express from 'express';
 import * as Sequelize from 'sequelize';
 import Beer from '../models/beers';
 import Comment from '../models/comments';
-import { type } from 'os';
 import Company from '../models/companies';
 import Country from '../models/countries';
 import Style from '../models/styles';
@@ -71,7 +70,33 @@ router.get('/list-recent', async (req, res) => {
   return res.status(200).json(recentBeerList);
 });
 
-// 맥주 정보
+// 인기 맥주
+// rate 높은 순으로 정렬
+// 최근 코멘트 우선순으로
+// 10개 까지 랜덤하게 정렬
+router.get('/list-popular', async (req, res) => {
+  const popularBeerList = await Beer.findAll({
+    limit: 10,
+    raw: true,
+    attributes: ['id', 'beer_name'],
+    include: [
+      {
+        model: Comment,
+        where: {
+          rate: {
+            [Sequelize.Op.gte]: 4, // 'rate' >= 4
+          },
+        },
+        as: 'getComment',
+        attributes: ['rate'],
+        order: ['updateAt', 'DESC'], // 최근 코멘트 작성 우선순위
+      },
+    ],
+  });
+  return res.status(200).json(popularBeerList);
+});
+
+// 맥주 상세 정보
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   const beerInfo = await Beer.findOne({
