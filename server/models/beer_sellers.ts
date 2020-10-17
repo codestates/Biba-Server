@@ -28,6 +28,15 @@ Beer_seller.init(
   }
 );
 
-export const associate = (db: dbType) => {};
+export const associate = (db: dbType): void => {
+  db.Beer_seller.belongsTo(db.Beer, {
+    foreignKey: 'beer_id',
+    targetKey: 'id',
+  });
+  db.Beer_seller.belongsTo(db.Seller, {
+    foreignKey: 'seller_id',
+    targetKey: 'id',
+  });
+};
 
 export default Beer_seller;
