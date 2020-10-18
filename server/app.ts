@@ -12,6 +12,8 @@ dotenv.config();
 import beerRouter from './routes/beerList';
 import tagRouter from './routes/tag';
 
+import BookMarkRouter from './routes/bookmark';
+
 const app = express();
 const port = 4000;
 
@@ -39,6 +41,8 @@ app.use('/users', usersRouter);
 // Router
 app.use('/beer', beerRouter);
 app.use('/tag', tagRouter);
+
+app.use('/bookmark', BookMarkRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.status(200).send('Success!');
