@@ -34,7 +34,6 @@ router.post('/checknickname', (req, res) => {
     data? 
     res.status(409).json('존재하는 닉네임 입니다.') :
     res.status(200).json('사용가능한 닉네임 입니다.');
-    // client작업: true 면 유저네임 수정하기
   });
 })
 
@@ -42,24 +41,22 @@ router.post('/checknickname', (req, res) => {
 router.post('/signup', (req, res) => {
   // user 가 회원가입 했을 때, 회원정보를 db에 저장하도록 구현.
   // 회원가입시 입장권은 불필요~
-  const { email, nickname, password } = req.body;
+  const { email, nickname, password, checkpw } = req.body;
 
-  User.findOne({
-    where: { email: email }
-  })
-  .then((data: any) => {
-    data ? res.status(409).send('Already exist user'):
-    User.create({
-      email: email,
-      nickname: nickname,
-      password: password,
+  password === checkpw ?
+    User.findOne({
+      where: { email }
     })
     .then((data: any) => {
-      // console.log('data: ', data);
-      // 회원가입시 client 측에서 필요한 데이터가 있는지 상의하기
-      res.status(200).json(data); 
-    })
-  })
+      data ? res.status(409).send('Already exist user'):
+      User.create({
+        email, nickname, password
+      })
+      .then((data: any) => {
+        res.status(200).json(data); 
+      })
+    }):
+    res.status(404).json('비밀번호 입력을 동일하게 해주세요!');
 })
 
 // * POST /users/login
