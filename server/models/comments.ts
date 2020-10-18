@@ -45,6 +45,7 @@ export const associate = (db: dbType): void => {
   db.Comment.belongsTo(db.Beer, {
     foreignKey: 'beer_id',
     targetKey: 'id',
+    as: 'getBeer',
   });
 };
 

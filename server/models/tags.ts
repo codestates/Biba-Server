@@ -28,6 +28,7 @@ export const associate = (db: dbType): void => {
   db.Tag.hasMany(db.Beer_tag, {
     foreignKey: 'tag_id',
     sourceKey: 'id',
+    as: 'getBeer_tag',
   });
 };
 
