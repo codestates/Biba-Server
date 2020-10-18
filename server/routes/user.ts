@@ -4,7 +4,8 @@ import User from '../models/user';
 
 const router = express.Router();
 
-// * GET /users/mypage
+// * GET /users/mypagechangepassword
+
 
 // * POST /users/checkemail, 이메일 중복 체크
 // client 측에서 email 확인 버튼을 눌렀을 때, server 측에서 유효성 검사 후 send!
@@ -80,11 +81,11 @@ router.post('/login', (req, res, next) => {
       res.status(200).json({ 
         userData: {
           id: data.id,
+          email: data.email, 
           nickname: data.nickname,
-          // username: data.username, 
-          // useremail: email,
         },
         token: token, 
+        profile: data.profile,
       });
     }
   })
