@@ -11,6 +11,7 @@ import { sequelize } from './models';
 dotenv.config();
 import beerRouter from './routes/beerList';
 import tagRouter from './routes/tag';
+import styleRouter from './routes/style';
 
 const app = express();
 const port = 4000;
@@ -36,9 +37,10 @@ app.use(
 );
 
 app.use('/users', usersRouter);
-// Router
+// Beer Router
 app.use('/beer', beerRouter);
 app.use('/tag', tagRouter);
+app.use('/style', styleRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.status(200).send('Success!');

@@ -10,19 +10,19 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   const allTagList = await Tag.findAll({
     attributes: ['id', 'tag_name'],
-  });
+  }).catch((err) => console.log(err));
   if (allTagList) {
     return res.status(200).json(allTagList);
   }
-  return res.status(404).send('태그를 찾을 수 없습니다.');
+  return res.status(404).send('리스트를 찾을 수 없습니다.');
 });
 
 // 해당 태그를 가지고 있는 모든 맥주 리스트
 // 모든 맥주 리스트처럼 맥주id, 이름과 평점 돌려줌
-router.get('/:id', async (req, res) => {
-  const { id } = req.params;
+router.get('/:tag_id', async (req, res) => {
+  const { tag_id } = req.params;
   const beerByTag = await Beer_tag.findAll({
-    where: { tag_id: id },
+    where: { tag_id },
     raw: true,
     attributes: {
       exclude: ['id', 'tag_id', 'beer_id', 'createdAt', 'updatedAt'],
@@ -40,11 +40,12 @@ router.get('/:id', async (req, res) => {
         ],
       },
     ],
-  });
-  if (beerByTag.length === 0) {
-    return res.status(404).send('해당 태그를 찾을 수 없습니다.');
+  }).catch((err) => console.log(err));
+
+  if (beerByTag) {
+    return res.status(200).json(beerByTag);
   }
-  return res.status(200).json(beerByTag);
+  return res.status(404).send('해당 태그의 맥주를 찾을 수 없습니다.');
 });
 
 export default router;

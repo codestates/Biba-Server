@@ -34,7 +34,7 @@ router.get('/list', async (req, res) => {
         attributes: ['rate'],
       },
     ],
-  });
+  }).catch((err) => console.log(err));
   // 시더스?? seders
   // rate로 줄 수 있게 바꾸기
   // const sendDate = allBeerList.map((data) =>
@@ -50,7 +50,10 @@ router.get('/list', async (req, res) => {
   //     return val;
   //   });
   //console.log(sendDate);
-  return res.status(200).json(allBeerList);
+  if (allBeerList) {
+    return res.status(200).json(allBeerList);
+  }
+  return res.status(404).send('리스트를 찾을 수 없습니다.');
 });
 
 // 최신 맥주
@@ -66,8 +69,11 @@ router.get('/list-recent', async (req, res) => {
         order: ['createAt', 'DESC'],
       },
     ],
-  });
-  return res.status(200).json(recentBeerList);
+  }).catch((err) => console.log(err));
+  if (recentBeerList) {
+    return res.status(200).json(recentBeerList);
+  }
+  return res.status(404).send('리스트를 찾을 수 없습니다.');
 });
 
 // 인기 맥주
@@ -92,8 +98,11 @@ router.get('/list-popular', async (req, res) => {
         order: ['updateAt', 'DESC'], // 최근 코멘트 작성 우선순위
       },
     ],
-  });
-  return res.status(200).json(popularBeerList);
+  }).catch((err) => console.log(err));
+  if (popularBeerList) {
+    return res.status(200).json(popularBeerList);
+  }
+  return res.status(404).send('리스트를 찾을 수 없습니다.');
 });
 
 // 맥주 상세 정보
@@ -126,7 +135,9 @@ router.get('/:id', async (req, res) => {
       },
     ],
   });
-
+  if (beerInfo === null) {
+    return res.status(404).send('등록되어 있지 않은 맥주 입니다.');
+  }
   return res.status(200).json(beerInfo);
 });
 
