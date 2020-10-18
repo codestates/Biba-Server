@@ -12,6 +12,7 @@ dotenv.config();
 import beerRouter from './routes/beerList';
 import tagRouter from './routes/tag';
 import styleRouter from './routes/style';
+import searchWord from './routes/search';
 
 const app = express();
 const port = 4000;
@@ -41,6 +42,7 @@ app.use('/users', usersRouter);
 app.use('/beer', beerRouter);
 app.use('/tag', tagRouter);
 app.use('/style', styleRouter);
+app.use('/search', searchWord);
 
 app.get('/', (req: Request, res: Response) => {
   res.status(200).send('Success!');
