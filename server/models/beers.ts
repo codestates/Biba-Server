@@ -99,6 +99,11 @@ export const associate = (db: dbType): void => {
     foreignKey: 'company_id',
     targetKey: 'id',
   });
+  db.Beer.hasMany(db.BookMark, {
+    as: 'getBookMark',
+    foreignKey: 'beer_id',
+    sourceKey: 'id',
+  });
 };
 
 export default Beer;

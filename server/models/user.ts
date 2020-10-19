@@ -49,6 +49,10 @@ export const associate = (db: dbType): void => {
     foreignKey: 'user_id',
     sourceKey: 'id',
   });
+  db.User.hasMany(db.BookMark, {
+    foreignKey: 'user_id',
+    sourceKey: 'id',
+  });
 };
 
 export default User;
