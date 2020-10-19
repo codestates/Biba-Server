@@ -4,8 +4,32 @@ import User from '../models/user';
 
 const router = express.Router();
 
-// * GET /users/mypagechangepassword
-
+// * POST /users/changePassword
+router.post('/changepassword', (req, res) => {
+  let { currentPassword, newPassword } = req.body;
+  let token: any = req.headers.token; // *
+  
+  const decoded_data: any = jwt.verify(token, 'secret_key');
+  
+  User.findOne({
+    where: { email: decoded_data.data }
+  })
+  .then((data: any) => {
+    data.dataValues.password !== newPassword ?
+      // NOTE: User.update({password: '새로운 유저PW'}, {where: {userID: '유저ID'}})
+      User.update(
+        { password: newPassword },            // 새로운 pass를 넣는다. // pk 는 업데이트 불가능
+        { where: {email: decoded_data.data }} // 유저 email
+      )
+      .then((data) => {
+        res.status(200).send('비밀번호 변경에 성공하셨습니다.');
+      })
+      .catch((err) => {
+        res.status(400).send('서버가 요청의 구문을 인식하지 못했습니다.');
+      }):
+      res.status(409).send('비밀번호 변경에 실패하셨습니다.');
+  })
+})
 
 // * POST /users/checkemail, 이메일 중복 체크
 // client 측에서 email 확인 버튼을 눌렀을 때, server 측에서 유효성 검사 후 send!
@@ -70,11 +94,10 @@ router.post('/login', (req, res, next) => {
     },
   })
   .then((data: any) => {
-    console.log('data: ', data);
     if (!data) {
       return res.status(404).send('unvalid user');
     } else {
-      let token = jwt.sign({ data: email, useId: data.id}, 'secret_key');  // *
+      let token = jwt.sign({ data: email, userId: data.id}, 'secret_key');  // *
       res.status(200).json({ 
         userData: {
           id: data.id,
