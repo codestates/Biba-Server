@@ -1,5 +1,8 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
+const username = process.env.DB_USER || 'root';
+const host = process.env.DB_HOST || '127.0.0.1';
+const port = process.env.DB_POTR || '3306';
 
 type timeOption = {
   dateStrings: boolean;
@@ -13,6 +16,7 @@ type Config = {
   timezone: string;
   dialectOptions: timeOption;
   host: string;
+  port: any;
   [key: string]: any;
 };
 
@@ -23,10 +27,11 @@ interface IConfigGroup {
 
 const config: IConfigGroup = {
   development: {
-    username: 'root',
+    username,
     password: process.env.DB_PD!,
     database: 'Biba',
-    host: '127.0.0.1',
+    host,
+    port,
     dialect: 'mysql',
     timezone: '+09:00',
     dialectOptions: {
@@ -35,10 +40,11 @@ const config: IConfigGroup = {
     },
   },
   production: {
-    username: 'root',
+    username,
     password: process.env.DB_PD!,
     database: 'database_production',
-    host: '127.0.0.1',
+    host,
+    port,
     dialect: 'mysql',
     timezone: '+09:00',
     dialectOptions: {

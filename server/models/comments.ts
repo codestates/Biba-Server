@@ -8,8 +8,10 @@ class Comment extends Model {
   public rate!: number;
   public user_id!: number;
   public beer_id!: number;
-  public readonly createAt!: Date;
-  public readonly updateAt!: Date;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+  public ['User.nickname']: string;
+  public ['Beer.beer_name']: string;
 }
 
 Comment.init(
@@ -41,11 +43,12 @@ export const associate = (db: dbType): void => {
   db.Comment.belongsTo(db.User, {
     foreignKey: 'user_id',
     targetKey: 'id',
+    as: 'User',
   });
   db.Comment.belongsTo(db.Beer, {
     foreignKey: 'beer_id',
     targetKey: 'id',
-    as: 'getBeer',
+    as: 'Beer',
   });
 };
 

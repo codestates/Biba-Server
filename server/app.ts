@@ -14,11 +14,9 @@ import tagRouter from './routes/tag';
 import styleRouter from './routes/style';
 import searchWord from './routes/search';
 
-
 import commentRouter from './routes/comment';
 
 import BookMarkRouter from './routes/bookmark';
-
 
 const app = express();
 const port = 4000;
@@ -50,11 +48,9 @@ app.use('/tag', tagRouter);
 app.use('/style', styleRouter);
 app.use('/search', searchWord);
 
-
 app.use('/comment', commentRouter);
 
 app.use('/bookmark', BookMarkRouter);
-
 
 app.get('/', (req: Request, res: Response) => {
   res.status(200).send('Success!');
