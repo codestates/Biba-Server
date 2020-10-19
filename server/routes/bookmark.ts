@@ -50,9 +50,22 @@ router.get('/:user_id', async (req, res) => {
           ],
         },
       ],
-    }).catch((err) => res.sendStatus(500));
+    });
+
+    const sendUserBookMarkList = userBookMarkList.map((data) =>
+      Object.assign(
+        {},
+        {
+          beer_id: data['getBeer.id'],
+          beer_name: data['getBeer.beer_name'],
+          beer_img: data['getBeer.beer_img'],
+          rate: data['getBeer.getComment.rate'],
+        }
+      )
+    );
+
     if (userBookMarkList) {
-      return res.status(200).json(userBookMarkList);
+      return res.status(200).json(sendUserBookMarkList);
     }
     return res.status(400).send('요청 정보를 찾을 수 없습니다.');
   }

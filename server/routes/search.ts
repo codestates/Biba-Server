@@ -14,7 +14,7 @@ router.get('/:search_word', async (req, res) => {
   }
   const searchBeerResults = await Beer.findAll({
     raw: true,
-    attributes: ['id', 'beer_name'],
+    attributes: ['id', 'beer_name', 'beer_img'],
     where: {
       beer_name: {
         [Sequelize.Op.like]: '%' + search_word + '%',
@@ -27,8 +27,21 @@ router.get('/:search_word', async (req, res) => {
         attributes: ['rate'],
       },
     ],
-  }).catch((err) => console.log(err));
-  return res.status(200).json(searchBeerResults);
+  });
+
+  const sendSearchBeerResults = searchBeerResults.map((data) =>
+    Object.assign(
+      {},
+      {
+        id: data.id,
+        beer_name: data.beer_name,
+        beer_img: data.beer_img,
+        rate: data['getComment.rate'],
+      }
+    )
+  );
+
+  return res.status(200).json(sendSearchBeerResults);
 });
 
 // router.get('/:search_word', async (req, res) => {

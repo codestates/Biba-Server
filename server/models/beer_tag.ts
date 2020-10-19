@@ -8,6 +8,10 @@ class Beer_tag extends Model {
   public beer_id!: number;
   public readonly createAt!: Date;
   public readonly updateAt!: Date;
+  public ['Beer.id']: number;
+  public ['Beer.beer_name']: string;
+  public ['Beer.beer_img']: string;
+  public ['Beer.getComment.rate']: number;
 }
 
 Beer_tag.init(

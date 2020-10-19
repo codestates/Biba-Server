@@ -28,7 +28,9 @@ class Beer extends Model {
   public readonly updateAt!: Date;
   // public getComment!: { rate: number };
   public rate!: number;
-  public ['getComment.rate']!: number;
+  public ['getComment.rate']: number;
+  public ['getComment.company']: any;
+  // public beerInfo: any;
   // public: ['getComment.rate']!: any
   // public getComments!: BelongsToManyAddAssociationMixin<Comment, number>;
   public getCompany!: BelongsToGetAssociationMixin<Company>;
