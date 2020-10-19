@@ -7,7 +7,7 @@ class User extends Model {
   public email!: string;
   public nickname!: string;
   public password!: string;
-  public profile_img!: string;
+  public profile!: string;
   public readonly createAt!: Date;
   public readonly updateAt!: Date;
 }
@@ -27,7 +27,7 @@ User.init(
       type: DataTypes.STRING,
       unique: true,
     },
-    profile_img: {
+    profile: {
       type: DataTypes.STRING,
     },
   },
@@ -46,6 +46,10 @@ export const associate = (db: dbType): void => {
     sourceKey: 'id',
   });
   db.User.hasMany(db.Report, {
+    foreignKey: 'user_id',
+    sourceKey: 'id',
+  });
+  db.User.hasMany(db.BookMark, {
     foreignKey: 'user_id',
     sourceKey: 'id',
   });
