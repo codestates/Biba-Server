@@ -11,6 +11,8 @@ import { sequelize } from './models';
 dotenv.config();
 import beerRouter from './routes/beerList';
 import tagRouter from './routes/tag';
+import styleRouter from './routes/style';
+import searchWord from './routes/search';
 
 
 import commentRouter from './routes/comment';
@@ -42,9 +44,11 @@ app.use(
 );
 
 app.use('/users', usersRouter);
-// Router
+// Beer Router
 app.use('/beer', beerRouter);
 app.use('/tag', tagRouter);
+app.use('/style', styleRouter);
+app.use('/search', searchWord);
 
 
 app.use('/comment', commentRouter);

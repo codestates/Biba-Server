@@ -11,11 +11,11 @@ import Company from './companies';
 import Style from './styles';
 import Country from './countries';
 
-interface GetRate {
-  rate: { [key: string]: any };
-}
+// interface GetRate {
+//   rate: { [key: string]: any };
+// }
 
-class Beer extends Model implements GetRate {
+class Beer extends Model {
   public readonly id!: number;
   public beer_name!: string;
   public beer_img!: string;
@@ -26,8 +26,10 @@ class Beer extends Model implements GetRate {
   public style_id!: number;
   public readonly createAt!: Date;
   public readonly updateAt!: Date;
-  // public getComment!: { [key: string]: any };
-  public rate!: { [key: string]: any };
+  // public getComment!: { rate: number };
+  public rate!: number;
+  public ['getComment.rate']!: number;
+  // public: ['getComment.rate']!: any
   // public getComments!: BelongsToManyAddAssociationMixin<Comment, number>;
   public getCompany!: BelongsToGetAssociationMixin<Company>;
   public geyStyle!: BelongsToGetAssociationMixin<Style>;
