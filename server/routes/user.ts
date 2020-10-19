@@ -1,6 +1,7 @@
 import * as express from 'express';
 import * as jwt from 'jsonwebtoken';
 import User from '../models/user';
+import * as crypto from 'crypto';
 
 const router = express.Router();
 
@@ -36,18 +37,27 @@ router.post('/changenickname', (req, res) => {
 // * POST /users/changePassword
 router.post('/changepassword', (req, res) => {
   let { currentPassword, newPassword } = req.body;
-  let token: any = req.headers.token; // *
+  let token: any = req.headers.token; 
   
   const decoded_data: any = jwt.verify(token, 'secret_key');
   
+  // crypto 적용
+  // 단방향이며, 비번 변경시 비밀키는 동일하므로 항상 요청시 동일한 암호화된 비밀번호를 DB에서 확인할 수 있다.
+  
+  // const shasum = crypto.createHmac('sha512', 'crypto_secret_key');
+  // shasum.update(newPassword);
+  // newPassword = shasum.digest('hex');
+
+  const hashPassword = crypto.createHmac('sha512', 'crypto_secret_key').update(newPassword).digest('hex');
+
   User.findOne({
     where: { email: decoded_data.data }
   })
   .then((data: any) => {
-    data.dataValues.password !== newPassword ?
+    data.dataValues.password !== hashPassword ?
       // NOTE: User.update({password: '새로운 유저PW'}, {where: {userID: '유저ID'}})
       User.update(
-        { password: newPassword },            // 새로운 pass를 넣는다. // pk 는 업데이트 불가능
+        { password: hashPassword },            // 새로운 pass를 넣는다. // pk 는 업데이트 불가능
         { where: {email: decoded_data.data }} // 유저 email
       )
       .then(() => {
