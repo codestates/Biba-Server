@@ -4,6 +4,35 @@ import User from '../models/user';
 
 const router = express.Router();
 
+// * POST /users/changeNickname // NOTE
+router.post('/changenickname', (req, res) => {
+  let { nickname } = req.body;
+  let token: any = req.headers.token;
+  
+  const decoded_data: any = jwt.verify(token, 'secret_key');
+
+  User.findOne({
+    where: { email: decoded_data.data }
+  })
+  .then((data: any) => {
+    console.log('data.dataValues.nickname: ', data.dataValues.nickname);
+    if(data.dataValues.nickname !== nickname){
+      User.update(
+        { nickname: nickname },
+        { where: { email: decoded_data.data }}
+      )
+      .then(() => {
+        res.status(200).send('닉네임을 변경하였습니다.');
+      })
+      .catch(() => {
+        res.status(400).send('서버가 요청의 구문을 인식하지 못했습니다.')
+      })
+    } else {
+      res.status(409).send('닉네임 변경에 실패하셨습니다.');
+    }
+  })
+})
+
 // * POST /users/changePassword
 router.post('/changepassword', (req, res) => {
   let { currentPassword, newPassword } = req.body;
@@ -21,10 +50,10 @@ router.post('/changepassword', (req, res) => {
         { password: newPassword },            // 새로운 pass를 넣는다. // pk 는 업데이트 불가능
         { where: {email: decoded_data.data }} // 유저 email
       )
-      .then((data) => {
+      .then(() => {
         res.status(200).send('비밀번호 변경에 성공하셨습니다.');
       })
-      .catch((err) => {
+      .catch(() => {
         res.status(400).send('서버가 요청의 구문을 인식하지 못했습니다.');
       }):
       res.status(409).send('비밀번호 변경에 실패하셨습니다.');
@@ -97,7 +126,7 @@ router.post('/login', (req, res, next) => {
     if (!data) {
       return res.status(404).send('unvalid user');
     } else {
-      let token = jwt.sign({ data: email, userId: data.id}, 'secret_key');  // *
+      let token = jwt.sign({ data: email, userId: data.id }, 'secret_key');  // *
       res.status(200).json({ 
         userData: {
           id: data.id,
