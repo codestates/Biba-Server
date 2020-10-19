@@ -34,15 +34,22 @@ router.get('/list', async (req, res) => {
         attributes: ['rate'],
       },
     ],
-  }).catch((err) => console.log(err));
+  }); //.catch((err) => console.log(err));
   // 시더스?? seders
   // rate로 줄 수 있게 바꾸기
-  // const sendDate = allBeerList.map((data) =>
-  //   Object.assign(
-  //     {},
-  //     { id: data.id, beer_name: data.beer_name, rate: data['getComment.rate'] }
-  //   )
-  // );
+  // interface SendDate {
+  //   id: number;
+  //   beer_name: string;
+  //   rate: number;
+  // }
+  // const rateTest = 'getComment.rate'
+
+  const sendDate = allBeerList.map((data) =>
+    Object.assign(
+      {},
+      { id: data.id, beer_name: data.beer_name, rate: data['getComment.rate'] }
+    )
+  );
 
   //   allBeerList.map((val) => {
   //     val.rate = val['getComment.rate'];
@@ -50,8 +57,8 @@ router.get('/list', async (req, res) => {
   //     return val;
   //   });
   //console.log(sendDate);
-  if (allBeerList) {
-    return res.status(200).json(allBeerList);
+  if (sendDate) {
+    return res.status(200).json(sendDate);
   }
   return res.status(404).send('리스트를 찾을 수 없습니다.');
 });
