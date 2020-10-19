@@ -6,8 +6,8 @@ import { sequelize } from './sequelize';
 class Style extends Model {
   public readonly id!: number;
   public style_name!: string;
-  public readonly createAt!: Date;
-  public readonly updateAt!: Date;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 
   public getBeer!: HasManyGetAssociationsMixin<Beer>;
 }

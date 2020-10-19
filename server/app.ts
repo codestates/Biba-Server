@@ -13,10 +13,9 @@ import beerRouter from './routes/beerList';
 import tagRouter from './routes/tag';
 import styleRouter from './routes/style';
 import searchWord from './routes/search';
-
 import commentRouter from './routes/comment';
-
-import BookMarkRouter from './routes/bookmark';
+import bookMarkRouter from './routes/bookmark';
+import reportRouter from './routes/report';
 
 const app = express();
 const port = 4000;
@@ -47,10 +46,9 @@ app.use('/beer', beerRouter);
 app.use('/tag', tagRouter);
 app.use('/style', styleRouter);
 app.use('/search', searchWord);
-
 app.use('/comment', commentRouter);
-
-app.use('/bookmark', BookMarkRouter);
+app.use('/bookmark', bookMarkRouter);
+app.use('/report', reportRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.status(200).send('Success!');

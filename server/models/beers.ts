@@ -24,8 +24,8 @@ class Beer extends Model {
   public company_id!: number;
   public country!: number; // ! 반드시 존재한
   public style_id!: number;
-  public readonly createAt!: Date;
-  public readonly updateAt!: Date;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
   // public getComment!: { rate: number };
   public rate!: number;
   public ['getComment.rate']: number;

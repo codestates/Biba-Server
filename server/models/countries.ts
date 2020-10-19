@@ -5,8 +5,8 @@ import { sequelize } from './sequelize';
 class Country extends Model {
   public readonly id!: number;
   public country!: string;
-  public readonly createAt!: Date;
-  public readonly updateAt!: Date;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 Country.init(

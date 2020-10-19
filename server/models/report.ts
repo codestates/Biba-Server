@@ -7,8 +7,10 @@ class Report extends Model {
   public user_id!: number;
   public beer_name!: string;
   public comment!: string;
-  public readonly createAt!: Date;
-  public readonly updateAt!: Date;
+  public recommend!: boolean;
+  public request!: boolean;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 Report.init(
@@ -21,6 +23,12 @@ Report.init(
     },
     comment: {
       type: DataTypes.STRING,
+    },
+    recommend: {
+      type: DataTypes.BOOLEAN,
+    },
+    request: {
+      type: DataTypes.BOOLEAN,
     },
   },
   {

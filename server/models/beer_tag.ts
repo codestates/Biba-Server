@@ -6,8 +6,8 @@ class Beer_tag extends Model {
   public readonly id!: number;
   public tag_id!: number;
   public beer_id!: number;
-  public readonly createAt!: Date;
-  public readonly updateAt!: Date;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
   public ['Beer.id']: number;
   public ['Beer.beer_name']: string;
   public ['Beer.beer_img']: string;

@@ -12,8 +12,8 @@ class BookMark extends Model {
   public ['getBeer.beer_img']: string;
   public ['getBeer.id']: number;
   public ['getBeer.getComment.rate']: number;
-  public readonly createAt!: Date;
-  public readonly updateAt!: Date;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 BookMark.init(

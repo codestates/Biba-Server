@@ -67,7 +67,7 @@ router.get('/list-recent', async (req, res) => {
         model: Comment,
         as: 'getComment',
         attributes: ['rate'],
-        order: ['createAt', 'DESC'],
+        order: ['createdAt', 'DESC'],
       },
     ],
   });

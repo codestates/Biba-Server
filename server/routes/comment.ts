@@ -45,11 +45,9 @@ router.get('/:beer_id', async (req, res) => {
 // 내가 작성한 리뷰
 router.post('/mylist', async (req, res) => {
   const { token }: any = req.headers;
-  console.log(token);
   if (token) {
     const decoded: any = jwt.verify(token, 'secret_key');
     const user_id = decoded.userId;
-    console.log('유저 아이디', user_id);
     const myCommentList = await Comment.findAll({
       where: {
         user_id,
@@ -106,7 +104,7 @@ router.post('/create', async (req, res) => {
       beer_id,
     }).catch(() => res.sendStatus(500));
     if (createComment) {
-      return res.status(201).json(createComment);
+      return res.status(201).send('코멘트 생성');
     }
     return res.status(400).send('잘못된 요청입니다.');
   }
@@ -147,7 +145,7 @@ router.post('/update', async (req, res) => {
 });
 
 // 코멘트 삭제
-router.post('/delete', async (req, res) => {
+router.delete('/delete', async (req, res) => {
   let { id } = req.body;
   const { token }: any = req.headers;
 
@@ -155,7 +153,7 @@ router.post('/delete', async (req, res) => {
     where: {
       id,
     },
-  });
+  }).catch(() => res.sendStatus(500));
 
   if (token) {
     const decoded: any = jwt.verify(token, 'secret_key');
