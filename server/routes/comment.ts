@@ -3,6 +3,8 @@ import Comment from '../models/comments';
 import User from '../models/user';
 import * as jwt from 'jsonwebtoken';
 import Beer from '../models/beers';
+import { IncomingHttpHeaders } from 'http';
+import { type } from 'os';
 
 const router = express.Router();
 
@@ -90,12 +92,28 @@ router.post('/mylist', async (req, res) => {
   return res.status(401).send('회원 정보를 찾을 수 없습니다.');
 });
 
+interface tokenType extends IncomingHttpHeaders {
+  token?: string;
+}
+
+type decodedType = {
+  data: string;
+  userId: number;
+  iat: number;
+};
+
+interface Idecoded {
+  decoded: decodedType | string;
+}
+
 // 코멘트 생성
 router.post('/create', async (req, res) => {
   const { comment, rate, beer_id } = req.body;
-  const { token }: any = req.headers;
+  const token: any = req.headers['token'];
+  console.log('token', token);
   if (token) {
     const decoded: any = jwt.verify(token, 'secret_key');
+    console.log('decoded', decoded);
     const user_id = decoded.userId;
     const createComment = await Comment.create({
       comment,
