@@ -6,8 +6,8 @@ class Beer_seller extends Model {
   public readonly id!: number;
   public beer_id!: number;
   public seller_id!: number;
-  public readonly createAt!: Date;
-  public readonly updateAt!: Date;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 Beer_seller.init(

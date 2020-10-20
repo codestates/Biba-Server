@@ -2,18 +2,21 @@ import * as express from 'express';
 import Beer from '../models/beers';
 import BookMark from '../models/bookmark';
 import Comment from '../models/comments';
+import * as jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
 // 즐겨찾기 추가
 router.post('/', async (req, res) => {
-  // userid 찾고
-  let { beer_id, user_id } = req.body;
-  if (user_id) {
+  const { beer_id } = req.body;
+  const { token }: any = req.headers;
+  if (token) {
+    const decoded: any = jwt.verify(token, 'secret_key');
+    const user_id = decoded.userId;
     const addBookMark = await BookMark.create({
       user_id,
       beer_id,
-    }).catch((err) => res.sendStatus(500));
+    }).catch(() => res.sendStatus(500));
     if (addBookMark) {
       return res.status(201).send('즐겨찾기 추가');
     }
@@ -23,13 +26,11 @@ router.post('/', async (req, res) => {
 });
 
 // 즐겨찾기 리스트
-router.get('/:user_id', async (req, res) => {
-  // user 정보
-  let { user_id } = req.params;
-  // 토큰 확인?
-  console.log(user_id);
-  //   let token;
-  if (user_id) {
+router.get('/', async (req, res) => {
+  const { token }: any = req.headers;
+  if (token) {
+    const decoded: any = jwt.verify(token, 'secret_key');
+    const user_id = decoded.userId;
     const userBookMarkList = await BookMark.findAll({
       raw: true,
       attributes: ['id'],
@@ -50,27 +51,58 @@ router.get('/:user_id', async (req, res) => {
           ],
         },
       ],
-    }).catch((err) => res.sendStatus(500));
+    });
+
+    const sendUserBookMarkList = userBookMarkList.map((data) =>
+      Object.assign(
+        {},
+        {
+          beer_id: data['getBeer.id'],
+          beer_name: data['getBeer.beer_name'],
+          beer_img: data['getBeer.beer_img'],
+          rate: data['getBeer.getComment.rate'],
+        }
+      )
+    );
+
     if (userBookMarkList) {
-      return res.status(200).json(userBookMarkList);
+      return res.status(200).json(sendUserBookMarkList);
     }
     return res.status(400).send('요청 정보를 찾을 수 없습니다.');
   }
+
   return res.status(401).send('유저 정보를 찾을 수 없습니다.');
 });
 
 // 즐겨찾기 목록 삭제
 router.delete('/:bookmark_id', async (req, res) => {
-  let { bookmark_id } = req.params;
-  const deleteBookMarkList = await BookMark.destroy({
+  const { bookmark_id } = req.params;
+  const { token }: any = req.headers;
+
+  // 삭제하려는 북마크 아이디의 유저 아이디와 토큰 유저아이디가 일치 확인
+  const userCheck: any = await BookMark.findOne({
     where: {
       id: bookmark_id,
     },
-  }).catch((err) => res.sendStatus(500));
-  if (deleteBookMarkList) {
-    return res.status(200).send('즐겨찾기 삭제');
+  }).catch(() => res.sendStatus(500));
+
+  if (token) {
+    const decoded: any = jwt.verify(token, 'secret_key');
+    const tokenId = decoded.userId;
+    if (userCheck.user_id === tokenId) {
+      const deleteBookMarkList = await BookMark.destroy({
+        where: {
+          id: bookmark_id,
+        },
+      }).catch(() => res.sendStatus(500));
+      if (deleteBookMarkList) {
+        return res.status(200).send('즐겨찾기 삭제');
+      }
+      return res.status(400).send('즐겨찾기를 목록을 찾을 수 없습니다.');
+    }
+    return res.status(403).send('권한이 없습니다.');
   }
-  return res.status(400).send('즐겨찾기를 목록을 찾을 수 없습니다.');
+  return res.status(401).send('회원 정보를 찾을 수 없습니다.');
 });
 
 export default router;

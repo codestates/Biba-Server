@@ -76,29 +76,28 @@ router.post('/checkemail', (req, res) => {
   const { email } = req.body;
 
   User.findOne({
-    where: { email }
+    where: { email },
   })
-  // TODO: any 말고 사용하는 방법? ts 찾아보기!
-  .then((data: any) => {
-    data ? 
-    res.status(409).json('존재하는 이메일 입니다.') : 
-    res.status(200).json('사용가능한 이메일 입니다.');
-  });
-})
+    // TODO: any 말고 사용하는 방법? ts 찾아보기!
+    .then((data: any) => {
+      data
+        ? res.status(409).json('존재하는 이메일 입니다.')
+        : res.status(200).json('사용가능한 이메일 입니다.');
+    });
+});
 
 // * POST /users/checknickname, 닉네임 중복 체크
 router.post('/checknickname', (req, res) => {
   const { nickname } = req.body;
 
   User.findOne({
-    where: { nickname }
-  })
-  .then((data: any) => {
-    data? 
-    res.status(409).json('존재하는 닉네임 입니다.') :
-    res.status(200).json('사용가능한 닉네임 입니다.');
+    where: { nickname },
+  }).then((data: any) => {
+    data
+      ? res.status(409).json('존재하는 닉네임 입니다.')
+      : res.status(200).json('사용가능한 닉네임 입니다.');
   });
-})
+});
 
 // * POST /users/signup
 router.post('/signup', (req, res) => {
@@ -106,21 +105,22 @@ router.post('/signup', (req, res) => {
   // 회원가입시 입장권은 불필요~
   const { email, nickname, password, checkpw } = req.body;
 
-  password === checkpw ?
-    User.findOne({
-      where: { email }
-    })
-    .then((data: any) => {
-      data ? res.status(409).send('Already exist user'):
-      User.create({
-        email, nickname, password
+  password === checkpw
+    ? User.findOne({
+        where: { email },
+      }).then((data: any) => {
+        data
+          ? res.status(409).send('Already exist user')
+          : User.create({
+              email,
+              nickname,
+              password,
+            }).then((data: any) => {
+              res.status(200).json(data);
+            });
       })
-      .then((data: any) => {
-        res.status(200).json(data); 
-      })
-    }):
-    res.status(404).json('비밀번호 입력을 동일하게 해주세요!');
-})
+    : res.status(404).json('비밀번호 입력을 동일하게 해주세요!');
+});
 
 // * POST /users/login
 router.post('/login', (req, res, next) => {
@@ -132,6 +132,7 @@ router.post('/login', (req, res, next) => {
       password: password,
     },
   })
+
   .then((data: any) => {
     if (!data) {
       return res.status(404).send('unvalid user');

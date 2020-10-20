@@ -8,9 +8,12 @@ import Style from '../models/styles';
 
 const router = express.Router();
 
-interface FIoo extends Beer {
-  [key: string]: any;
-}
+// interface IBeer extends Beer {
+//   ['getComment.rate']: number;
+//   ['getCountry.country']: string;
+//   ['getStyle.style_name']: string;
+
+// }
 
 // 모든 맥주 리스트 (랜덤하게)
 router.get('/list', async (req, res) => {
@@ -26,7 +29,7 @@ router.get('/list', async (req, res) => {
     order: Sequelize.literal('rand()'),
     limit: 10,
     raw: true,
-    attributes: ['id', 'beer_name'],
+    attributes: ['id', 'beer_name', 'beer_img'],
     include: [
       {
         model: Comment,
@@ -34,31 +37,22 @@ router.get('/list', async (req, res) => {
         attributes: ['rate'],
       },
     ],
-  }); //.catch((err) => console.log(err));
-  // 시더스?? seders
-  // rate로 줄 수 있게 바꾸기
-  // interface SendDate {
-  //   id: number;
-  //   beer_name: string;
-  //   rate: number;
-  // }
-  // const rateTest = 'getComment.rate'
+  });
 
-  const sendDate = allBeerList.map((data) =>
+  const sendAllBeerList = allBeerList.map((data) =>
     Object.assign(
       {},
-      { id: data.id, beer_name: data.beer_name, rate: data['getComment.rate'] }
+      {
+        id: data.id,
+        beer_name: data.beer_name,
+        beer_img: data.beer_img,
+        rate: data['getComment.rate'],
+      }
     )
   );
 
-  //   allBeerList.map((val) => {
-  //     val.rate = val['getComment.rate'];
-  //     delete val['getComment.rate'];
-  //     return val;
-  //   });
-  //console.log(sendDate);
-  if (sendDate) {
-    return res.status(200).json(sendDate);
+  if (sendAllBeerList) {
+    return res.status(200).json(sendAllBeerList);
   }
   return res.status(404).send('리스트를 찾을 수 없습니다.');
 });
@@ -67,18 +61,31 @@ router.get('/list', async (req, res) => {
 router.get('/list-recent', async (req, res) => {
   const recentBeerList = await Beer.findAll({
     raw: true,
-    attributes: ['id', 'beer_name'],
+    attributes: ['id', 'beer_name', 'beer_img'],
     include: [
       {
         model: Comment,
         as: 'getComment',
         attributes: ['rate'],
-        order: ['createAt', 'DESC'],
+        order: ['createdAt', 'DESC'],
       },
     ],
-  }).catch((err) => console.log(err));
-  if (recentBeerList) {
-    return res.status(200).json(recentBeerList);
+  });
+
+  const sendrecentBeerList = recentBeerList.map((data) =>
+    Object.assign(
+      {},
+      {
+        id: data.id,
+        beer_name: data.beer_name,
+        beer_img: data.beer_img,
+        rate: data['getComment.rate'],
+      }
+    )
+  );
+
+  if (sendrecentBeerList) {
+    return res.status(200).json(sendrecentBeerList);
   }
   return res.status(404).send('리스트를 찾을 수 없습니다.');
 });
@@ -91,7 +98,7 @@ router.get('/list-popular', async (req, res) => {
   const popularBeerList = await Beer.findAll({
     limit: 10,
     raw: true,
-    attributes: ['id', 'beer_name'],
+    attributes: ['id', 'beer_name', 'beer_img'],
     include: [
       {
         model: Comment,
@@ -105,9 +112,22 @@ router.get('/list-popular', async (req, res) => {
         order: ['updateAt', 'DESC'], // 최근 코멘트 작성 우선순위
       },
     ],
-  }).catch((err) => console.log(err));
-  if (popularBeerList) {
-    return res.status(200).json(popularBeerList);
+  });
+
+  const sendpopularBeerList = popularBeerList.map((data) =>
+    Object.assign(
+      {},
+      {
+        id: data.id,
+        beer_name: data.beer_name,
+        beer_img: data.beer_img,
+        rate: data['getComment.rate'],
+      }
+    )
+  );
+
+  if (sendpopularBeerList) {
+    return res.status(200).json(sendpopularBeerList);
   }
   return res.status(404).send('리스트를 찾을 수 없습니다.');
 });
@@ -115,7 +135,7 @@ router.get('/list-popular', async (req, res) => {
 // 맥주 상세 정보
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
-  const beerInfo = await Beer.findOne({
+  const beerInfo: any = await Beer.findOne({
     attributes: ['id', 'beer_name', 'beer_img', 'abv', 'ibu'],
     where: { id },
     raw: true,
@@ -142,10 +162,24 @@ router.get('/:id', async (req, res) => {
       },
     ],
   });
-  if (beerInfo === null) {
-    return res.status(404).send('등록되어 있지 않은 맥주 입니다.');
+  const sendbeerInfo = Object.assign(
+    {},
+    {
+      id: beerInfo.id,
+      beer_name: beerInfo.beer_name,
+      beer_img: beerInfo.beer_img,
+      abv: beerInfo.abv,
+      ibu: beerInfo.ibu,
+      company: beerInfo['getComment.company'],
+      country: beerInfo['getCountry.country'],
+      style_name: beerInfo['getStyle.style_name'],
+      rate: beerInfo['getComment.rate'],
+    }
+  );
+  if (beerInfo) {
+    return res.status(200).json(sendbeerInfo);
   }
-  return res.status(200).json(beerInfo);
+  return res.status(404).send('등록되어 있지 않은 맥주 입니다.');
 });
 
 export default router;

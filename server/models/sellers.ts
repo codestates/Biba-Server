@@ -5,8 +5,8 @@ import { sequelize } from './sequelize';
 class Seller extends Model {
   public readonly id!: number;
   public seller!: string;
-  public readonly createAt!: Date;
-  public readonly updateAt!: Date;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 Seller.init(
