@@ -42,7 +42,7 @@ const config: IConfigGroup = {
   production: {
     username,
     password: process.env.DB_PD!,
-    database: 'database_production',
+    database: 'Biba_Prod',
     host,
     port,
     dialect: 'mysql',

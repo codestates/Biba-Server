@@ -35,8 +35,22 @@ sequelize
 
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: [
+      'http://localhost:3000',
+      'http://beer4.wyz',
+      'https://beer4.wyz',
+      'http://biba.website',
+      'https://biba.website',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+    ],
   })
 );
 
@@ -54,6 +68,11 @@ app.get('/', (req: Request, res: Response) => {
   res.status(200).send('Success!');
 });
 
+app.get('/health', (req, res) => {
+  console.log('Time:', Date());
+  res.status(299).send('health check');
+});
+
 app.listen(port, () => {
-  console.log(`connected ${port}`);
+  console.log(`connected port: ${port}`);
 });
