@@ -16,7 +16,7 @@ import searchWord from './routes/search';
 import commentRouter from './routes/comment';
 import bookMarkRouter from './routes/bookmark';
 import reportRouter from './routes/report';
-
+//test
 const app = express();
 const port = 4000;
 
