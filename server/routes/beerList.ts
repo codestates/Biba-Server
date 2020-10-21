@@ -5,6 +5,7 @@ import Comment from '../models/comments';
 import Company from '../models/companies';
 import Country from '../models/countries';
 import Style from '../models/styles';
+import BookMark from '../models/bookmark';
 
 const router = express.Router();
 
@@ -135,6 +136,14 @@ router.get('/list-popular', async (req, res) => {
 // 맥주 상세 정보
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
+  const { user_id } = req.body;
+
+  // 코멘트 추가할 때 or 맥주 추가할 때 , 리뷰 남길때마다 유저 상태를 관리
+  // 회원 가입할 때 유저의 상태 관
+
+  // 유저가 맥주 상세정보에 들어 왔을때 상태를 전달해 줘야 함
+  // 북마크 테이블에서 ,, 받은 맥주id와 유저id가 일치 한다면
+
   const beerInfo: any = await Beer.findOne({
     attributes: ['id', 'beer_name', 'beer_img', 'abv', 'ibu'],
     where: { id },
@@ -159,6 +168,12 @@ router.get('/:id', async (req, res) => {
         model: Comment,
         as: 'getComment',
         attributes: ['rate'],
+      },
+      {
+        model: BookMark,
+        where: { user_id },
+        as: 'getBookMark',
+        attributes: ['bookmark', 'review', 'starScore'],
       },
     ],
   });
