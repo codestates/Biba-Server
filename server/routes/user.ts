@@ -5,10 +5,10 @@ import * as crypto from 'crypto';
 
 const router = express.Router();
 
-// * POST /users/changeNickname // NOTE
+// * POST /users/changeNickname 
 router.post('/changenickname', (req, res) => {
-  let { nickname } = req.body;
-  let token: any = req.headers.token;
+  let { nickname, token } = req.body;
+  // let token: any = req.headers.token;
   
   const decoded_data: any = jwt.verify(token, 'secret_key');
 
@@ -36,8 +36,8 @@ router.post('/changenickname', (req, res) => {
 
 // * POST /users/changePassword
 router.post('/changepassword', (req, res) => {
-  let { currentPassword, newPassword } = req.body;
-  let token: any = req.headers.token; 
+  let { currentPassword, newPassword, token } = req.body;
+  // let token: any = req.headers.token; 
   
   const decoded_data: any = jwt.verify(token, 'secret_key');
   
@@ -57,7 +57,7 @@ router.post('/changepassword', (req, res) => {
     data.dataValues.password !== hashPassword ?
       // NOTE: User.update({password: '새로운 유저PW'}, {where: {userID: '유저ID'}})
       User.update(
-        { password: hashPassword },            // 새로운 pass를 넣는다. // pk 는 업데이트 불가능
+        { password: hashPassword },           // 새로운 pass를 넣는다. // pk 는 업데이트 불가능
         { where: {email: decoded_data.data }} // 유저 email
       )
       .then(() => {
@@ -81,8 +81,8 @@ router.post('/checkemail', (req, res) => {
     // TODO: any 말고 사용하는 방법? ts 찾아보기!
     .then((data: any) => {
       data
-        ? res.status(409).json('존재하는 이메일 입니다.')
-        : res.status(200).json('사용가능한 이메일 입니다.');
+        ? res.status(409).send('존재하는 이메일 입니다.')
+        : res.status(200).send('사용가능한 이메일 입니다.');
     });
 });
 
@@ -94,18 +94,17 @@ router.post('/checknickname', (req, res) => {
     where: { nickname },
   }).then((data: any) => {
     data
-      ? res.status(409).json('존재하는 닉네임 입니다.')
-      : res.status(200).json('사용가능한 닉네임 입니다.');
+      ? res.status(409).send('존재하는 닉네임 입니다.')
+      : res.status(200).send('사용가능한 닉네임 입니다.');
   });
+  // catch
 });
 
 // * POST /users/signup
 router.post('/signup', (req, res) => {
   // user 가 회원가입 했을 때, 회원정보를 db에 저장하도록 구현.
-  // 회원가입시 입장권은 불필요~
-  const { email, nickname, password, checkpw } = req.body;
-
-  password === checkpw
+  const { email, nickname, password, passwordForCheck } = req.body;
+  password === passwordForCheck 
     ? User.findOne({
         where: { email },
       }).then((data: any) => {
@@ -116,10 +115,10 @@ router.post('/signup', (req, res) => {
               nickname,
               password,
             }).then((data: any) => {
-              res.status(200).json(data);
+              res.status(200).send("성공적으로 로그인 하셨습니다."); // NOTE: data 도 보내줄 필요없다!
             });
       })
-    : res.status(404).json('비밀번호 입력을 동일하게 해주세요!');
+    : res.status(404).send('비밀번호 입력을 동일하게 해주세요!');
 });
 
 // * POST /users/login
@@ -135,7 +134,7 @@ router.post('/login', (req, res, next) => {
 
   .then((data: any) => {
     if (!data) {
-      return res.status(404).send('unvalid user');
+      return res.status(404).send('invalid user');
     } else {
       let token = jwt.sign({ data: email, userId: data.id }, 'secret_key');  // *
       res.status(200).json({ 
@@ -154,6 +153,7 @@ router.post('/login', (req, res, next) => {
   })
 });
 
+// TODO: routes/social 분리하기
 // * POST /users/sociallogin/google
 // * POST /users/sociallogin/kakao
 // * POST /users/sociallogin/facebook
