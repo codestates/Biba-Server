@@ -137,14 +137,59 @@ router.get('/list-popular', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   const { user_id } = req.body;
+  let rate = 0;
+  let user_review = false;
+  let user_input = '';
+  let user_star = false;
+  let user_rate = 0;
+  let user_bookmark = false;
 
-  // 코멘트 추가할 때 or 맥주 추가할 때 , 리뷰 남길때마다 유저 상태를 관리
-  // 회원 가입할 때 유저의 상태 관
+  // 북마크 등록되어 있는지 체크
+  const bookmarkCheck = await BookMark.findOne({
+    where: {
+      beer_id: id,
+      user_id: user_id,
+    },
+    raw: true,
+    attributes: ['user_id', 'beer_id'],
+  });
+  if (bookmarkCheck !== null) {
+    user_bookmark = true;
+  }
 
-  // 유저가 맥주 상세정보에 들어 왔을때 상태를 전달해 줘야 함
-  // 북마크 테이블에서 ,, 받은 맥주id와 유저id가 일치 한다면
+  // 코멘트 체크
+  const commentCheck = await Comment.findOne({
+    where: {
+      beer_id: id,
+      user_id: user_id,
+    },
+    raw: true,
+    attributes: ['rate', 'comment'],
+  });
+  if (commentCheck !== null) {
+    user_star = true;
+    user_rate = commentCheck.rate;
+    // console.log('코멘트 확인', commentCheck.comment === '');
+    user_input = commentCheck.comment;
+    user_review = true;
+  }
 
-  const beerInfo: any = await Beer.findOne({
+  // 평균 별점
+  const allRate = await Comment.findAll({
+    where: {
+      beer_id: id,
+    },
+    raw: true,
+    attributes: ['rate'],
+  });
+  if (allRate.length !== 0) {
+    for (let i = 0; i < allRate.length; i++) {
+      rate += allRate[i].rate;
+    }
+    rate = Math.round(rate / allRate.length);
+  }
+
+  const beerInfo = await Beer.findOne({
     attributes: ['id', 'beer_name', 'beer_img', 'abv', 'ibu'],
     where: { id },
     raw: true,
@@ -169,29 +214,30 @@ router.get('/:id', async (req, res) => {
         as: 'getComment',
         attributes: ['rate'],
       },
-      {
-        model: BookMark,
-        where: { user_id },
-        as: 'getBookMark',
-        attributes: ['bookmark', 'review', 'starScore'],
-      },
     ],
   });
-  const sendbeerInfo = Object.assign(
-    {},
-    {
-      id: beerInfo.id,
-      beer_name: beerInfo.beer_name,
-      beer_img: beerInfo.beer_img,
-      abv: beerInfo.abv,
-      ibu: beerInfo.ibu,
-      company: beerInfo['getComment.company'],
-      country: beerInfo['getCountry.country'],
-      style_name: beerInfo['getStyle.style_name'],
-      rate: beerInfo['getComment.rate'],
-    }
-  );
-  if (beerInfo) {
+
+  if (beerInfo !== null) {
+    const sendbeerInfo = Object.assign(
+      {},
+      {
+        id: beerInfo.id,
+        beer_name: beerInfo.beer_name,
+        beer_img: beerInfo.beer_img,
+        abv: beerInfo.abv,
+        ibu: beerInfo.ibu,
+        company: beerInfo['getComment.company'],
+        country: beerInfo['getCountry.country'],
+        style_name: beerInfo['getStyle.style_name'],
+        story: '맥주 관련 정보 등, 추가 예정',
+        rate,
+        user_review,
+        user_input,
+        user_star,
+        user_rate,
+        user_bookmark,
+      }
+    );
     return res.status(200).json(sendbeerInfo);
   }
   return res.status(404).send('등록되어 있지 않은 맥주 입니다.');

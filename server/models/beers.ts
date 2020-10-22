@@ -26,13 +26,11 @@ class Beer extends Model {
   public style_id!: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-  // public getComment!: { rate: number };
   public rate!: number;
   public ['getComment.rate']: number;
-  public ['getComment.company']: any;
-  // public beerInfo: any;
-  // public: ['getComment.rate']!: any
-  // public getComments!: BelongsToManyAddAssociationMixin<Comment, number>;
+  public ['getComment.company']: string;
+  public ['getCountry.country']: string;
+  public ['getStyle.style_name']: string;
   public getCompany!: BelongsToGetAssociationMixin<Company>;
   public geyStyle!: BelongsToGetAssociationMixin<Style>;
   public getCountry!: BelongsToGetAssociationMixin<Country>;

@@ -73,6 +73,9 @@ router.get('/', async (req, res) => {
   return res.status(401).send('유저 정보를 찾을 수 없습니다.');
 });
 
+interface userCheckType extends BookMark {
+  user_id: number;
+}
 // 즐겨찾기 목록 삭제
 router.delete('/:bookmark_id', async (req, res) => {
   const { bookmark_id, token } = req.params;
