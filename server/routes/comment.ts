@@ -130,13 +130,13 @@ router.post('/create', async (req, res) => {
 // 코멘트 수정
 router.post('/update', async (req, res) => {
   const { comment, rate, id, token } = req.body;
-  const userCheck: any = await Comment.findOne({
+  const userCheck = await Comment.findOne({
     where: {
       id,
     },
   });
 
-  if (token) {
+  if (token && userCheck !== null) {
     const decoded: any = jwt.verify(token, 'secret_key');
     const user_id = decoded.userId;
     if (userCheck.user_id === user_id) {
@@ -169,7 +169,7 @@ router.delete('/delete', async (req, res) => {
     },
   }).catch(() => res.sendStatus(500));
 
-  if (token) {
+  if (token && userCheck !== null) {
     const decoded: any = jwt.verify(token, 'secret_key');
     const user_id = decoded.userId;
     // 토큰이 있을때 토큰에서 찾은 유저 아이디와 삭제하려는 멘트의 유저 아이디가 일치
