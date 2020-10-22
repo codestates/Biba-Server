@@ -46,7 +46,7 @@ router.get('/:beer_id', async (req, res) => {
 
 // 내가 작성한 리뷰
 router.post('/mylist', async (req, res) => {
-  const { token }: any = req.headers;
+  const { token } = req.body;
   if (token) {
     const decoded: any = jwt.verify(token, 'secret_key');
     const user_id = decoded.userId;
@@ -108,9 +108,7 @@ interface Idecoded {
 
 // 코멘트 생성
 router.post('/create', async (req, res) => {
-  const { comment, rate, beer_id } = req.body;
-  const token: any = req.headers['token'];
-  console.log('token', token);
+  const { comment, rate, beer_id, token } = req.body;
   if (token) {
     const decoded: any = jwt.verify(token, 'secret_key');
     console.log('decoded', decoded);
@@ -131,8 +129,7 @@ router.post('/create', async (req, res) => {
 
 // 코멘트 수정
 router.post('/update', async (req, res) => {
-  const { comment, rate, id } = req.body;
-  const { token }: any = req.headers;
+  const { comment, rate, id, token } = req.body;
   const userCheck: any = await Comment.findOne({
     where: {
       id,
@@ -164,8 +161,7 @@ router.post('/update', async (req, res) => {
 
 // 코멘트 삭제
 router.delete('/delete', async (req, res) => {
-  let { id } = req.body;
-  const { token }: any = req.headers;
+  let { id, token } = req.body;
 
   const userCheck: any = await Comment.findOne({
     where: {
