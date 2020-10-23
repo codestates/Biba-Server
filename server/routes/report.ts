@@ -6,8 +6,7 @@ const router = express.Router();
 
 // 추천
 router.post('/recommend', async (req, res) => {
-  const { token }: any = req.headers;
-  const { comment } = req.body;
+  const { comment, token } = req.body;
   if (token) {
     const decoded: any = jwt.verify(token, 'secret_key');
     const user_id = decoded.userId;
@@ -27,8 +26,7 @@ router.post('/recommend', async (req, res) => {
 
 // 등록 요청
 router.post('/request', async (req, res) => {
-  const { token }: any = req.headers;
-  const { comment } = req.body;
+  const { comment, token } = req.body;
   if (token) {
     const decoded: any = jwt.verify(token, 'secret_key');
     const user_id = decoded.userId;

@@ -8,10 +8,6 @@ class BookMark extends Model {
   public beer_id!: number;
   public beer_name!: string;
   public beer_img!: string;
-  public bookmark!: boolean;
-  public review!: boolean;
-  public starScore!: number;
-  public star!: boolean;
 
   public ['getBeer.beer_name']: string;
   public ['getBeer.beer_img']: string;
@@ -28,15 +24,6 @@ BookMark.init(
     },
     beer_id: {
       type: DataTypes.INTEGER,
-    },
-    bookmark: {
-      type: DataTypes.BOOLEAN,
-    },
-    review: {
-      type: DataTypes.BOOLEAN,
-    },
-    starScore: {
-      type: DataTypes.BOOLEAN,
     },
   },
   {
