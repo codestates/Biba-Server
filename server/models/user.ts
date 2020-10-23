@@ -29,6 +29,7 @@ User.init(
     },
     profile: {
       type: DataTypes.STRING,
+      defaultValue: '',
     },
   },
   {

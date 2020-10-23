@@ -60,6 +60,10 @@ Beer.init(
     country_id: {
       type: DataTypes.INTEGER,
     },
+    rate: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   },
   {
     sequelize,
