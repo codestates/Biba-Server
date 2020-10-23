@@ -6,6 +6,7 @@ import Company from '../models/companies';
 import Country from '../models/countries';
 import Style from '../models/styles';
 import BookMark from '../models/bookmark';
+import AverageRate from '../modules/rate';
 
 const router = express.Router();
 
@@ -30,14 +31,7 @@ router.get('/list', async (req, res) => {
     order: Sequelize.literal('rand()'),
     limit: 10,
     raw: true,
-    attributes: ['id', 'beer_name', 'beer_img'],
-    include: [
-      {
-        model: Comment,
-        as: 'getComment',
-        attributes: ['rate'],
-      },
-    ],
+    attributes: ['id', 'beer_name', 'beer_img', 'rate'],
   });
 
   const sendAllBeerList = allBeerList.map((data) =>
@@ -47,7 +41,7 @@ router.get('/list', async (req, res) => {
         id: data.id,
         beer_name: data.beer_name,
         beer_img: data.beer_img,
-        rate: data['getComment.rate'],
+        rate: data.rate,
       }
     )
   );
@@ -62,12 +56,12 @@ router.get('/list', async (req, res) => {
 router.get('/list-recent', async (req, res) => {
   const recentBeerList = await Beer.findAll({
     raw: true,
-    attributes: ['id', 'beer_name', 'beer_img'],
+    attributes: ['id', 'beer_name', 'beer_img', 'rate'],
     include: [
       {
         model: Comment,
         as: 'getComment',
-        attributes: ['rate'],
+        attributes: [],
         order: ['createdAt', 'DESC'],
       },
     ],
@@ -80,7 +74,7 @@ router.get('/list-recent', async (req, res) => {
         id: data.id,
         beer_name: data.beer_name,
         beer_img: data.beer_img,
-        rate: data['getComment.rate'],
+        rate: data.rate,
       }
     )
   );
@@ -99,20 +93,12 @@ router.get('/list-popular', async (req, res) => {
   const popularBeerList = await Beer.findAll({
     limit: 10,
     raw: true,
-    attributes: ['id', 'beer_name', 'beer_img'],
-    include: [
-      {
-        model: Comment,
-        where: {
-          rate: {
-            [Sequelize.Op.gte]: 4, // 'rate' >= 4
-          },
-        },
-        as: 'getComment',
-        attributes: ['rate'],
-        order: ['updateAt', 'DESC'], // 최근 코멘트 작성 우선순위
+    attributes: ['id', 'beer_name', 'beer_img', 'rate'],
+    where: {
+      rate: {
+        [Sequelize.Op.gte]: 4, // 'rate' >= 4
       },
-    ],
+    },
   });
 
   const sendpopularBeerList = popularBeerList.map((data) =>
@@ -122,7 +108,7 @@ router.get('/list-popular', async (req, res) => {
         id: data.id,
         beer_name: data.beer_name,
         beer_img: data.beer_img,
-        rate: data['getComment.rate'],
+        rate: data.rate,
       }
     )
   );
@@ -137,6 +123,10 @@ router.get('/list-popular', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   const { user_id } = req.body;
+  // 유저 아이디가 없을 때도 체크
+  if (user_id === undefined) {
+    res.status(403).send('접근 권한이 없습니다.');
+  }
   let rate = 0;
   let user_review = false;
   let user_input = '';
@@ -173,24 +163,11 @@ router.get('/:id', async (req, res) => {
     user_input = commentCheck.comment;
     user_review = true;
   }
-
   // 평균 별점
-  const allRate = await Comment.findAll({
-    where: {
-      beer_id: id,
-    },
-    raw: true,
-    attributes: ['rate'],
-  });
-  if (allRate.length !== 0) {
-    for (let i = 0; i < allRate.length; i++) {
-      rate += allRate[i].rate;
-    }
-    rate = Math.round(rate / allRate.length);
-  }
+  AverageRate(id, rate);
 
   const beerInfo = await Beer.findOne({
-    attributes: ['id', 'beer_name', 'beer_img', 'abv', 'ibu'],
+    attributes: ['id', 'beer_name', 'beer_img', 'abv', 'ibu', 'rate'],
     where: { id },
     raw: true,
     include: [
@@ -209,11 +186,6 @@ router.get('/:id', async (req, res) => {
         as: 'getStyle',
         attributes: ['style_name'],
       },
-      {
-        model: Comment,
-        as: 'getComment',
-        attributes: ['rate'],
-      },
     ],
   });
 
@@ -230,7 +202,7 @@ router.get('/:id', async (req, res) => {
         country: beerInfo['getCountry.country'],
         style_name: beerInfo['getStyle.style_name'],
         story: '맥주 관련 정보 등, 추가 예정',
-        rate,
+        rate: beerInfo.rate,
         user_review,
         user_input,
         user_star,

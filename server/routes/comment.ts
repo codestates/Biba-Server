@@ -4,21 +4,23 @@ import User from '../models/user';
 import * as jwt from 'jsonwebtoken';
 import Beer from '../models/beers';
 import { IncomingHttpHeaders } from 'http';
-import { type } from 'os';
+import AverageRate from '../modules/rate';
 
 const router = express.Router();
 
 // 코멘트 리스트
 router.get('/:beer_id', async (req, res) => {
   let { beer_id } = req.params;
+  console.log(beer_id);
   const beerComment = await Comment.findAll({
     where: { beer_id },
     raw: true,
+    order: [['rate', 'DESC']],
     include: [
       {
         model: User,
         as: 'User',
-        attributes: ['nickname'],
+        attributes: ['nickname', 'id', 'profile'],
       },
     ],
   });
@@ -34,10 +36,12 @@ router.get('/:beer_id', async (req, res) => {
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
         nickname: data['User.nickname'],
+        user_id: data['User.id'],
+        profile: data['User.profile'],
       }
     )
   );
-
+  console.log(beerComment);
   if (beerComment) {
     return res.status(200).json(sendBeerComment);
   }
@@ -120,6 +124,7 @@ router.post('/create', async (req, res) => {
       beer_id,
     }).catch(() => res.sendStatus(500));
     if (createComment) {
+      AverageRate(beer_id, rate);
       return res.status(201).send('코멘트 생성');
     }
     return res.status(400).send('잘못된 요청입니다.');
@@ -129,7 +134,7 @@ router.post('/create', async (req, res) => {
 
 // 코멘트 수정
 router.post('/update', async (req, res) => {
-  const { comment, rate, id, token } = req.body;
+  const { comment, rate, id, token, beer_id } = req.body;
   const userCheck = await Comment.findOne({
     where: {
       id,
@@ -150,6 +155,7 @@ router.post('/update', async (req, res) => {
         }
       ).catch(() => res.sendStatus(500));
       if (updateComment) {
+        AverageRate(beer_id, rate);
         return res.status(201).send('수정 완료');
       }
       return res.status(400).send('잘못된 요청입니다.');

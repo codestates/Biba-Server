@@ -12,6 +12,8 @@ class Comment extends Model {
   public readonly updatedAt!: Date;
   public ['User.nickname']: string;
   public ['Beer.beer_name']: string;
+  public ['User.id']: number;
+  public ['User.profile']: string;
 }
 
 Comment.init(
