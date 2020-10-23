@@ -8,8 +8,7 @@ const router = express.Router();
 
 // 즐겨찾기 추가
 router.post('/', async (req, res) => {
-  const { beer_id } = req.body;
-  const { token }: any = req.headers;
+  const { beer_id, token } = req.body;
   if (token) {
     const decoded: any = jwt.verify(token, 'secret_key');
     const user_id = decoded.userId;
@@ -27,7 +26,7 @@ router.post('/', async (req, res) => {
 
 // 즐겨찾기 리스트
 router.get('/', async (req, res) => {
-  const { token }: any = req.headers;
+  const { token } = req.body;
   if (token) {
     const decoded: any = jwt.verify(token, 'secret_key');
     const user_id = decoded.userId;
@@ -74,10 +73,12 @@ router.get('/', async (req, res) => {
   return res.status(401).send('유저 정보를 찾을 수 없습니다.');
 });
 
+interface userCheckType extends BookMark {
+  user_id: number;
+}
 // 즐겨찾기 목록 삭제
 router.delete('/:bookmark_id', async (req, res) => {
-  const { bookmark_id } = req.params;
-  const { token }: any = req.headers;
+  const { bookmark_id, token } = req.params;
 
   // 삭제하려는 북마크 아이디의 유저 아이디와 토큰 유저아이디가 일치 확인
   const userCheck: any = await BookMark.findOne({

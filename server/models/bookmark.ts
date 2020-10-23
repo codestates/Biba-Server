@@ -8,6 +8,7 @@ class BookMark extends Model {
   public beer_id!: number;
   public beer_name!: string;
   public beer_img!: string;
+
   public ['getBeer.beer_name']: string;
   public ['getBeer.beer_img']: string;
   public ['getBeer.id']: number;
