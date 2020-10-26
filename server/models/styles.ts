@@ -6,6 +6,8 @@ import { sequelize } from './sequelize';
 class Style extends Model {
   public readonly id!: number;
   public style_name!: string;
+  public style_name_kr!: string;
+  public explain!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -16,6 +18,15 @@ Style.init(
   {
     style_name: {
       type: DataTypes.STRING,
+      defaultValue: '',
+    },
+    style_name_kr: {
+      type: DataTypes.STRING,
+      defaultValue: '',
+    },
+    explain: {
+      type: DataTypes.STRING,
+      defaultValue: '',
     },
   },
   {

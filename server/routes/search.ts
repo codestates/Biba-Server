@@ -14,19 +14,12 @@ router.get('/:search_word', async (req, res) => {
   }
   const searchBeerResults = await Beer.findAll({
     raw: true,
-    attributes: ['id', 'beer_name', 'beer_img'],
+    attributes: ['id', 'beer_name', 'beer_img', 'rate'],
     where: {
-      beer_name: {
+      search_word: {
         [Sequelize.Op.like]: '%' + search_word + '%',
       },
     },
-    include: [
-      {
-        model: Comment,
-        as: 'getComment',
-        attributes: ['rate'],
-      },
-    ],
   });
 
   const sendSearchBeerResults = searchBeerResults.map((data) =>
@@ -36,7 +29,7 @@ router.get('/:search_word', async (req, res) => {
         id: data.id,
         beer_name: data.beer_name,
         beer_img: data.beer_img,
-        rate: data['getComment.rate'],
+        rate: data.rate,
       }
     )
   );

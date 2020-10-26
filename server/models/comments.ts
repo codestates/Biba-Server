@@ -20,6 +20,7 @@ Comment.init(
   {
     comment: {
       type: DataTypes.STRING,
+      defaultValue: '',
     },
     rate: {
       type: DataTypes.INTEGER,

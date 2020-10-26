@@ -13,6 +13,7 @@ Seller.init(
   {
     seller: {
       type: DataTypes.STRING,
+      defaultValue: '',
     },
   },
   {

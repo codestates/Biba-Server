@@ -1,12 +1,6 @@
-import {
-  Model,
-  DataTypes,
-  BelongsToManyAddAssociationMixin,
-  BelongsToGetAssociationMixin,
-} from 'sequelize';
+import { Model, DataTypes, BelongsToGetAssociationMixin } from 'sequelize';
 import { dbType } from './index';
 import { sequelize } from './sequelize';
-import Comment from './comments';
 import Company from './companies';
 import Style from './styles';
 import Country from './countries';
@@ -18,6 +12,8 @@ import Country from './countries';
 class Beer extends Model {
   public readonly id!: number;
   public beer_name!: string;
+  public beer_name_en!: string;
+  public search_word!: string;
   public beer_img!: string;
   public abv!: number;
   public ibu!: number;
@@ -27,10 +23,14 @@ class Beer extends Model {
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
   public rate!: number;
+  public story!: string;
+  public explain!: string;
+  public source!: string;
   public ['getComment.rate']: number;
   public ['getComment.company']: string;
   public ['getCountry.country']: string;
   public ['getStyle.style_name']: string;
+  public ['getBeer_tag.getTag.tag_name']: string;
   public getCompany!: BelongsToGetAssociationMixin<Company>;
   public geyStyle!: BelongsToGetAssociationMixin<Style>;
   public getCountry!: BelongsToGetAssociationMixin<Country>;
@@ -42,14 +42,25 @@ Beer.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    beer_name_en: {
+      type: DataTypes.STRING,
+      defaultValue: '',
+    },
+    search_word: {
+      type: DataTypes.STRING,
+      defaultValue: '',
+    },
     beer_img: {
       type: DataTypes.STRING,
+      defaultValue: '',
     },
     abv: {
       type: DataTypes.INTEGER,
+      defaultValue: 0,
     },
     ibu: {
       type: DataTypes.INTEGER,
+      defaultValue: 0,
     },
     style_id: {
       type: DataTypes.INTEGER,
@@ -63,6 +74,18 @@ Beer.init(
     rate: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
+    },
+    story: {
+      type: DataTypes.STRING,
+      defaultValue: '',
+    },
+    explain: {
+      type: DataTypes.STRING,
+      defaultValue: '',
+    },
+    source: {
+      type: DataTypes.STRING,
+      defaultValue: '',
     },
   },
   {

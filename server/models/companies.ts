@@ -5,6 +5,7 @@ import { sequelize } from './sequelize';
 class Company extends Model {
   public readonly id!: number;
   public company!: string;
+  public company_kr!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -13,6 +14,11 @@ Company.init(
   {
     company: {
       type: DataTypes.STRING,
+      defaultValue: '',
+    },
+    company_kr: {
+      type: DataTypes.STRING,
+      defaultValue: '',
     },
   },
   {
