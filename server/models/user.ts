@@ -26,6 +26,7 @@ User.init(
     nickname: {
       type: DataTypes.STRING,
       unique: true,
+      defaultValue: '',
     },
     profile: {
       type: DataTypes.STRING,

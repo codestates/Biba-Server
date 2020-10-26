@@ -23,12 +23,15 @@ Report.init(
     },
     comment: {
       type: DataTypes.STRING,
+      defaultValue: '',
     },
     recommend: {
       type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     request: {
       type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {

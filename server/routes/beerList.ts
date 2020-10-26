@@ -7,6 +7,8 @@ import Country from '../models/countries';
 import Style from '../models/styles';
 import BookMark from '../models/bookmark';
 import AverageRate from '../modules/rate';
+import Beer_tag from '../models/beer_tag';
+import Tag from '../models/tags';
 
 const router = express.Router();
 
@@ -167,7 +169,18 @@ router.get('/:id', async (req, res) => {
   AverageRate(id, rate);
 
   const beerInfo = await Beer.findOne({
-    attributes: ['id', 'beer_name', 'beer_img', 'abv', 'ibu', 'rate'],
+    attributes: [
+      'id',
+      'beer_name',
+      'beer_name_en',
+      'beer_img',
+      'abv',
+      'ibu',
+      'rate',
+      'story',
+      'explain',
+      'source',
+    ],
     where: { id },
     raw: true,
     include: [
@@ -186,6 +199,18 @@ router.get('/:id', async (req, res) => {
         as: 'getStyle',
         attributes: ['style_name'],
       },
+      {
+        model: Beer_tag,
+        as: 'getBeer_tag',
+        attributes: [],
+        include: [
+          {
+            model: Tag,
+            as: 'getTag',
+            attributes: ['tag_name'],
+          },
+        ],
+      },
     ],
   });
 
@@ -195,14 +220,18 @@ router.get('/:id', async (req, res) => {
       {
         id: beerInfo.id,
         beer_name: beerInfo.beer_name,
+        beer_name_en: beerInfo.beer_name_en,
         beer_img: beerInfo.beer_img,
         abv: beerInfo.abv,
         ibu: beerInfo.ibu,
         company: beerInfo['getComment.company'],
         country: beerInfo['getCountry.country'],
         style_name: beerInfo['getStyle.style_name'],
-        story: '맥주 관련 정보 등, 추가 예정',
+        story: beerInfo.story,
+        explain: beerInfo.explain,
+        source: beerInfo.source,
         rate: beerInfo.rate,
+        tag_name: beerInfo['getBeer_tag.getTag.tag_name'],
         user_review,
         user_input,
         user_star,
