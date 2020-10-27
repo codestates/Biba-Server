@@ -10,6 +10,7 @@ import Style, { associate as associateStyle } from './styles';
 import Tag, { associate as associateTag } from './tags';
 import User, { associate as associateUser } from './user';
 import BookMark, { associate as associateBookMark } from './bookmark';
+import Graph, { associate as associateGraph } from './graph';
 
 export * from './sequelize';
 
@@ -26,6 +27,7 @@ const db = {
   Tag,
   User,
   BookMark,
+  Graph,
 };
 
 export type dbType = typeof db;
@@ -41,3 +43,4 @@ associateStyle(db);
 associateTag(db);
 associateUser(db);
 associateBookMark(db);
+associateGraph(db);

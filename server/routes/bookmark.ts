@@ -8,21 +8,44 @@ const router = express.Router();
 
 // 즐겨찾기 추가
 router.post('/', async (req, res) => {
-  const { beer_id, token } = req.body;
-  if (token) {
-    const decoded: any = jwt.verify(token, 'secret_key');
-    const user_id = decoded.userId;
-    const addBookMark = await BookMark.create({
-      user_id,
-      beer_id,
-    }).catch(() => res.sendStatus(500));
-    if (addBookMark) {
-      return res.status(201).send('즐겨찾기 추가');
+  try {
+    const { beer_id, token } = req.body;
+    if (token) {
+      const decoded: any = jwt.verify(token, 'secret_key');
+      const user_id = decoded.userId;
+      const [result, created] = await BookMark.findOrCreate({
+        where: {
+          user_id,
+          beer_id,
+        },
+      });
+      if (created) {
+        res.status(201).json({ bookmark: true });
+      } else {
+        BookMark.destroy({
+          where: {
+            user_id,
+            beer_id,
+          },
+        });
+        res.status(201).json({ bookmark: false });
+      }
     }
-    return res.status(400).send('즐겨찾기 추가 실패');
+    return res.status(401).send('유저 정보를 찾을 수 없습니다.');
+  } catch (e) {
+    return res.sendStatus(500);
   }
-  return res.status(401).send('회원 정보를 찾을 수 없습니다.');
 });
+// const decoded: any = jwt.verify(token, 'secret_key');
+// const user_id = decoded.userId;
+// const addBookMark = await BookMark.create({
+//   user_id,
+//   beer_id,
+// }).catch(() => res.sendStatus(500));
+// if (addBookMark) {
+//   return res.status(201).json({ bookmark: true });
+// }
+// return res.status(400).send('즐겨찾기 추가 실패');
 
 // 즐겨찾기 리스트
 router.get('/', async (req, res) => {
@@ -76,6 +99,7 @@ router.get('/', async (req, res) => {
 interface userCheckType extends BookMark {
   user_id: number;
 }
+
 // 즐겨찾기 목록 삭제
 router.delete('/:bookmark_id', async (req, res) => {
   const { bookmark_id, token } = req.params;
