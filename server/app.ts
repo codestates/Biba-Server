@@ -1,14 +1,18 @@
+//declare Express
 import * as express from 'express';
+import { Request, Response } from 'express';
+import { sequelize } from './models';
+
+//middleware
 import * as morgan from 'morgan';
 import * as cors from 'cors';
 import * as dotenv from 'dotenv';
+
+// import userRoutes
+import * as googleRouter from './routes/google'
 import * as usersRouter from './routes/user';
-// import usersRouter from './routes/users'; // NOTE: 일반-> * as 변경하는 방법!
-import { Request, Response } from 'express';
 
-import { sequelize } from './models';
-
-dotenv.config();
+// import beerRoutes
 import beerRouter from './routes/beerList';
 import tagRouter from './routes/tag';
 import styleRouter from './routes/style';
@@ -16,14 +20,17 @@ import searchWord from './routes/search';
 import commentRouter from './routes/comment';
 import bookMarkRouter from './routes/bookmark';
 import reportRouter from './routes/report';
-//test
+
 const app = express();
 const port = 4000;
+dotenv.config();
 
+//use middleware
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // TODO: true 사용 이유?
 
+//sequelize sync
 sequelize
   .sync({ force: false }) // NOTE: db 실행시 초기화 할건지?(true: 초기화)
   .then(() => {
@@ -33,6 +40,7 @@ sequelize
     console.log('연결 실패', err);
   });
 
+//middleware
 app.use(
   cors({
     origin: [
@@ -43,7 +51,7 @@ app.use(
       'https://biba.website',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    credentials: true,
+    credentials: true, // 쿠키사용시 설정
     allowedHeaders: [
       'Origin',
       'X-Requested-With',
@@ -54,7 +62,10 @@ app.use(
   })
 );
 
+// User Router
 app.use('/users', usersRouter);
+app.use('/socials/google', googleRouter);
+
 // Beer Router
 app.use('/beer', beerRouter);
 app.use('/tag', tagRouter);

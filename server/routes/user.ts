@@ -1,26 +1,21 @@
+//declare Express
 import * as express from 'express';
-import * as jwt from 'jsonwebtoken';
 import User from '../models/user';
+
+//middleware
+import * as jwt from 'jsonwebtoken';
 import * as crypto from 'crypto';
 import * as multer from 'multer';
-import * as aws from 'aws-sdk';
 import * as multerS3 from 'multer-s3';
+import * as aws from 'aws-sdk';
 import * as path from 'path';
-// aws.config.loadFromPath(__dirname + '/../config');
-// import * as ad from '../config/s3''
+
+//multer,aws-sdk,s3 연동
 const dirPath = path.join(__dirname, '/../config/s3.json');
 aws.config.loadFromPath(dirPath);
 
 const router = express.Router();
 
-// const utill = {
-//   success: (status, message, data) => {
-//     return {
-//       status: status,
-
-//     }
-//   }
-// }
 const today = () => {
   return (
     String(new Date().getFullYear()) +
@@ -44,7 +39,6 @@ const upload = multer({
     }, // 유저 아이디 붙여서 +
   }),
 });
-
 router.post('/profile', upload.single('image'), async (req, res) => {
   const image = req.file;
   console.log(image);
@@ -53,6 +47,7 @@ router.post('/profile', upload.single('image'), async (req, res) => {
   }
   res.status(200).send('성공');
 });
+
 
 // * POST /users/changeNickname
 router.post('/changenickname', (req, res) => {
@@ -88,6 +83,8 @@ router.post('/changepassword', (req, res) => {
   // let token: any = req.headers.token;
 
   const decoded_data: any = jwt.verify(token, 'secret_key');
+  // const decoded_data: string | object = jwt.verify(token, 'secret_key');
+  // console.log('decoded_data: ', decoded_data);
 
   // crypto 적용
   // 단방향이며, 비번 변경시 비밀키는 동일하므로 항상 요청시 동일한 암호화된 비밀번호를 DB에서 확인할 수 있다.
@@ -102,8 +99,9 @@ router.post('/changepassword', (req, res) => {
     .digest('hex');
 
   User.findOne({
-    where: { email: decoded_data.data },
+    where: { email: decoded_data.data }, // TODO: string 설정을 제외하는 방법?
   }).then((data: any) => {
+    // console.log('data: ', data);
     data.dataValues.password !== hashPassword
       ? // NOTE: User.update({password: '새로운 유저PW'}, {where: {userID: '유저ID'}})
         User.update(
@@ -165,14 +163,14 @@ router.post('/signup', (req, res) => {
               nickname,
               password,
             }).then((data: any) => {
-              res.status(200).send('성공적으로 로그인 하셨습니다.'); // NOTE: data 도 보내줄 필요없다!
+              res.status(200).send('성공적으로 로그인 하셨습니다.');
             });
       })
     : res.status(404).send('비밀번호 입력을 동일하게 해주세요!');
 });
 
 // * POST /users/login
-router.post('/login', (req, res, next) => {
+router.post('/login', (req, res) => {
   // NOTE: 자주 발생하는 에러: 타입 추론이 any 로 되어있는 경우, 직접 적어주면 된다.
   const { email, password } = req.body;
   User.findOne({
@@ -204,8 +202,8 @@ router.post('/login', (req, res, next) => {
 });
 
 // TODO: routes/social 분리하기
-// * POST /users/sociallogin/google
-// * POST /users/sociallogin/kakao
-// * POST /users/sociallogin/facebook
+// * POST /users/social/google
+// * POST /users/social/kakao
+// * POST /users/social/facebook
 
 export = router;
