@@ -221,6 +221,29 @@ router.get('/:id', async (req, res) => {
       ],
     });
 
+    const findTag = await Beer_tag.findAll({
+      where: {
+        beer_id: id,
+      },
+      raw: true,
+      attributes: [],
+      include: [
+        {
+          model: Tag,
+          as: 'getTag',
+          attributes: ['tag_name'],
+        },
+      ],
+    });
+
+    const tags = findTag.reduce((acc: string[], val) => {
+      let tag = val['getTag.tag_name'];
+      console.log('test', tag);
+      acc.push(tag);
+      return acc;
+    }, []);
+    console.log(tags);
+
     const beerGraph = await Graph.findOne({
       where: {
         id,
@@ -246,7 +269,7 @@ router.get('/:id', async (req, res) => {
           explain: beerInfo.explain,
           source: beerInfo.source,
           rate: beerInfo.rate,
-          tag_name: beerInfo['getBeer_tag.getTag.tag_name'],
+          tags,
           user_review,
           user_input,
           user_star,

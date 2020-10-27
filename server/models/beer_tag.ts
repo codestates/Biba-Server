@@ -12,6 +12,7 @@ class Beer_tag extends Model {
   public ['Beer.beer_name']: string;
   public ['Beer.beer_img']: string;
   public ['Beer.getComment.rate']: number;
+  public ['getTag.tag_name']: string;
 }
 
 Beer_tag.init(
