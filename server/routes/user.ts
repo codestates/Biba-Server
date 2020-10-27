@@ -48,7 +48,6 @@ router.post('/profile', upload.single('image'), async (req, res) => {
   res.status(200).send('성공');
 });
 
-
 // * POST /users/changeNickname
 router.post('/changenickname', (req, res) => {
   let { nickname, token } = req.body;
@@ -153,41 +152,37 @@ router.post('/signup', (req, res) => {
   // user 가 회원가입 했을 때, 회원정보를 db에 저장하도록 구현.
   const { email, nickname, password, passwordForCheck } = req.body;
   if (password === passwordForCheck) {
-    
     const hashPassword = crypto
-    .createHmac('sha512', 'crypto_secret_key')
-    .update(password)
-    .digest('hex');
+      .createHmac('sha512', 'crypto_secret_key')
+      .update(password)
+      .digest('hex');
 
     User.findOne({
-       where: { email },
-     }).then((data: any) => {
-       data
-         ? res.status(409).send('Already exist user')
-         : User.create({
-             email,
-             nickname,
-             password,
-           }).then(() => {
-            User.update(
-              { password: hashPassword }, 
-              { where: { email } } 
-            );
-              res.status(200).send('성공적으로 로그인 하셨습니다.');
+      where: { email },
+    }).then((data: any) => {
+      data
+        ? res.status(409).send('Already exist user')
+        : User.create({
+            email,
+            nickname,
+            password,
+          }).then(() => {
+            User.update({ password: hashPassword }, { where: { email } });
+            res.status(200).send('성공적으로 로그인 하셨습니다.');
           });
-     })
-    }
-    // res.status(404).send('비밀번호 입력을 동일하게 해주세요!');
+    });
+  }
+  // res.status(404).send('비밀번호 입력을 동일하게 해주세요!');
 });
 
 // * POST /users/login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
-  
+
   const hashPassword = crypto
-  .createHmac('sha512', 'crypto_secret_key')
-  .update(password)
-  .digest('hex');
+    .createHmac('sha512', 'crypto_secret_key')
+    .update(password)
+    .digest('hex');
 
   User.findOne({
     where: {
@@ -196,11 +191,7 @@ router.post('/login', (req, res) => {
     },
   })
     .then((data: any) => {
-      User.update(
-        { password: hashPassword }, 
-        { where: { email } } 
-      )
-        .then(() => {
+      User.update({ password: hashPassword }, { where: { email } }).then(() => {
         if (!data) {
           return res.status(404).send('invalid user');
         } else {
@@ -215,7 +206,7 @@ router.post('/login', (req, res) => {
             profile: data.profile,
           });
         }
-      })
+      });
     })
     .catch((err: any) => {
       res.status(404).send(err);

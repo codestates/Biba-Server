@@ -9,7 +9,7 @@ import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 
 // import userRoutes
-import * as googleRouter from './routes/google'
+//import * as googleRouter from './routes/google'
 import * as usersRouter from './routes/user';
 
 // import beerRoutes
@@ -64,7 +64,7 @@ app.use(
 
 // User Router
 app.use('/users', usersRouter);
-app.use('/socials/google', googleRouter);
+//app.use('/socials/google', googleRouter);
 
 // Beer Router
 app.use('/beer', beerRouter);
