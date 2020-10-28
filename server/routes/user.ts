@@ -9,6 +9,8 @@ import * as multer from 'multer';
 import * as multerS3 from 'multer-s3';
 import * as aws from 'aws-sdk';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 //multer,aws-sdk,s3 연동
 const dirPath = path.join(__dirname, '/../config/s3.json');
