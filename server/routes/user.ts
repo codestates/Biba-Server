@@ -197,7 +197,7 @@ router.post('/signup', (req, res) => {
   const { email, nickname, password, passwordForCheck } = req.body;
   if (password === passwordForCheck) {
     const hashPassword = crypto
-      .createHmac('sha512', 'crypto_secret_key')
+      .createHmac('sha512', process.env.CRYPTO!)
       .update(password + process.env.SALT)
       .digest('hex');
 
@@ -243,7 +243,7 @@ router.post('/login', (req, res) => {
     .then((data: any) => {
       if (data) {
         User.update({ password: hashPassword }, { where: { email } });  
-        let token = jwt.sign({ data: email, userId: data.id }, 'secret_key'); 
+        let token = jwt.sign({ data: email, userId: data.id }, process.env.JWT!); 
         res.status(200).json({
           userData: {
             id: data.id,
