@@ -7,12 +7,13 @@ const router = express.Router();
 // 추천
 router.post('/recommend', async (req, res) => {
   try {
-    const { comment, token } = req.body;
+    const { comment, token, beer_name } = req.body;
     if (token) {
       const decoded: any = jwt.verify(token, 'secret_key');
       const user_id = decoded.userId;
       const recommendPost = await Report.create({
         comment,
+        beer_name,
         user_id: user_id,
         recommend: true,
         request: false,
@@ -31,12 +32,13 @@ router.post('/recommend', async (req, res) => {
 // 등록 요청
 router.post('/request', async (req, res) => {
   try {
-    const { comment, token } = req.body;
+    const { comment, token, beer_name } = req.body;
     if (token) {
       const decoded: any = jwt.verify(token, 'secret_key');
       const user_id = decoded.userId;
       const recommendPost = await Report.create({
         comment,
+        beer_name,
         user_id: user_id,
         recommend: false,
         request: true,

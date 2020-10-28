@@ -33,7 +33,7 @@ const upload = multer({
   limits: {
     fileSize: 1024 * 2000,
   },
-  
+
   storage: multerS3({
     s3: s3,
     bucket: 'biba-user-profile',
@@ -41,6 +41,7 @@ const upload = multer({
     key: (req, file, cb) => {
       // 업로드에 인자를 받아서 
       cb(null,  + '_' + today() + '.' + file.originalname.split('.').pop());
+
     }, // TODO: username === nickname 가져오려면 nickname 을 body 로 받기
   }),
 });
@@ -87,7 +88,7 @@ router.post('/profile', upload.single('image'), async (req, res) => {
 // NOTE: { email, nickname, token } 3개 보내준다.
 // profile 은 다른곳!
 
-// * POST /users/profile/delete  
+// * POST /users/profile/delete
 router.post('/profile/delete', function (req, res) {
   // const image = (req as MulterRequest).file;
   // const location = image.location;
@@ -138,6 +139,7 @@ router.post('/profile/delete', function (req, res) {
       });
     }
   });
+
 });
 
 // * POST /users/changeNickname
@@ -183,11 +185,12 @@ router.post('/changepassword', (req, res) => {
   // const shasum = crypto.createHmac('sha512', 'crypto_secret_key');
   // shasum.update(newPassword);
   // newPassword = shasum.digest('hex');
-
+  const saltedPassword = newPassword + process.env.SALT!;
   const hashPassword = crypto
     .createHmac('sha512', process.env.CRYPTO!)
-    .update(newPassword + process.env.SALT)
+    .update(saltedPassword)
     .digest('hex');
+  console.log('비밀번호 변경 할 때 ::', hashPassword);
 
   User.findOne({
     where: { email: decoded_data.data }, // TODO: string 설정을 제외하는 방법?
@@ -244,57 +247,65 @@ router.post('/checknickname', (req, res) => {
 router.post('/signup', (req, res) => {
   // user 가 회원가입 했을 때, 회원정보를 db에 저장하도록 구현.
   const { email, nickname, password, passwordForCheck } = req.body;
-  if (password === passwordForCheck && password !== '' && passwordForCheck !== '') {
+  if (
+    password === passwordForCheck &&
+    password !== '' &&
+    passwordForCheck !== ''
+  ) {
+    const saltedPassword = password + process.env.SALT!;
     const hashPassword = crypto
       .createHmac('sha512', process.env.CRYPTO!)
-      .update(password + process.env.SALT)
+      .update(saltedPassword)
       .digest('hex');
-
+    console.log('회원가입 할 때 ::', hashPassword);
     User.findOne({
-       where: { email },
-     }).then((data: any) => {
-       data
-         ? res.status(409).send('Already exist user')
-         : User.create({
-             email,
-             nickname,
-             password,
-           }).then(() => {
-            User.update(
-              { password: hashPassword }, 
-              { where: { email } } 
-            );
-            res.status(200).send('성공적으로 회원가입 하셨습니다.');
-        })
+      where: { email },
+    })
+      .then((data: any) => {
+        data
+          ? res.status(409).send('Already exist user')
+          : User.create({
+              email,
+              nickname,
+              password,
+            }).then(() => {
+              User.update({ password: hashPassword }, { where: { email } });
+              res.status(200).send('성공적으로 회원가입 하셨습니다.');
+            });
       })
-      .catch(()=>{
+      .catch(() => {
         res.status(404).send('비밀번호 입력을 동일하게 해주세요!');
-      })
-    } else {
-      res.status(409).send('비밀번호를 입력해 주시거나, 동일한 비밀번호를 입력해 주세요, ')
-    }
+      });
+  } else {
+    res
+      .status(409)
+      .send('비밀번호를 입력해 주시거나, 동일한 비밀번호를 입력해 주세요, ');
+  }
 });
-
-
 
 // * POST /users/login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
+  const saltedPassword = password + process.env.SALT!;
   const hashPassword = crypto
     .createHmac('sha512', process.env.CRYPTO!)
-    .update(password + process.env.SALT) 
+    .update(saltedPassword)
     .digest('hex');
+  console.log('로그인 할 때 ::', hashPassword);
 
   User.findOne({
     where: {
       email: email,
-      password: hashPassword  
+      password: hashPassword,
     },
   })
     .then((data: any) => {
       if (data) {
-        User.update({ password: hashPassword }, { where: { email } });  
-        let token = jwt.sign({ data: email, userId: data.id }, process.env.JWT!); 
+        User.update({ password: hashPassword }, { where: { email } });
+        let token = jwt.sign(
+          { data: email, userId: data.id },
+          process.env.JWT!
+        );
         res.status(200).json({
           userData: {
             id: data.id,
@@ -304,9 +315,9 @@ router.post('/login', (req, res) => {
           token: token,
           profile: data.profile,
         });
-        } else {
-          return res.status(404).send('invalid user');      
-        }
+      } else {
+        return res.status(404).send('invalid user');
+      }
     })
     .catch((err: any) => {
       res.status(404).send(err);

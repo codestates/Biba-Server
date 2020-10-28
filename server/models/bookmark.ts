@@ -12,7 +12,7 @@ class BookMark extends Model {
   public ['getBeer.beer_name']: string;
   public ['getBeer.beer_img']: string;
   public ['getBeer.id']: number;
-  public ['getBeer.getComment.rate']: number;
+  public ['getBeer.rate']: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }

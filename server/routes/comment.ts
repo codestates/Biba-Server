@@ -5,6 +5,7 @@ import * as jwt from 'jsonwebtoken';
 import Beer from '../models/beers';
 import { IncomingHttpHeaders } from 'http';
 import AverageRate from '../modules/rate';
+import { userInfo } from 'os';
 
 const router = express.Router();
 
@@ -145,24 +146,19 @@ router.post('/create', async (req, res) => {
 // 코멘트 수정
 router.post('/update', async (req, res) => {
   try {
-    const { comment, rate, id, token, beer_id } = req.body;
-    const userCheck = await Comment.findOne({
-      where: {
-        id,
-      },
-    });
+    const { comment, rate, token, beer_id } = req.body;
 
-    if (token && userCheck !== null) {
+    if (token) {
       const decoded: any = jwt.verify(token, 'secret_key');
       const user_id = decoded.userId;
-      if (userCheck.user_id === user_id) {
+      if (user_id) {
         const updateComment = await Comment.update(
           {
             rate,
             comment,
           },
           {
-            where: { id },
+            where: { user_id },
           }
         ).catch(() => res.sendStatus(500));
         if (updateComment) {
@@ -182,22 +178,18 @@ router.post('/update', async (req, res) => {
 // 코멘트 삭제
 router.post('/delete', async (req, res) => {
   try {
-    let { id, token } = req.body;
+    const { token, beer_id } = req.body;
+    // 깃북 아이디 받는 부분 없애기
 
-    const userCheck: any = await Comment.findOne({
-      where: {
-        id,
-      },
-    }).catch(() => res.sendStatus(500));
-
-    if (token && userCheck !== null) {
+    if (token) {
       const decoded: any = jwt.verify(token, 'secret_key');
       const user_id = decoded.userId;
       // 토큰이 있을때 토큰에서 찾은 유저 아이디와 삭제하려는 멘트의 유저 아이디가 일치
-      if (userCheck.user_id === user_id) {
+      if (user_id) {
         const deleteComment = await Comment.destroy({
           where: {
-            id,
+            user_id,
+            beer_id,
           },
         }).catch((err) => res.sendStatus(500));
         if (deleteComment) {
