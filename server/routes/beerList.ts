@@ -52,83 +52,8 @@ router.get('/list', async (req, res) => {
   }
 });
 
-// 최신 맥주
-router.get('/list-recent', async (req, res) => {
-  try {
-    const recentBeerList = await Beer.findAll({
-      raw: true,
-      attributes: ['id', 'beer_name', 'beer_img', 'rate'],
-      include: [
-        {
-          model: Comment,
-          as: 'getComment',
-          attributes: [],
-          order: ['createdAt', 'DESC'],
-        },
-      ],
-    });
-
-    const sendrecentBeerList = recentBeerList.map((data) =>
-      Object.assign(
-        {},
-        {
-          id: data.id,
-          beer_name: data.beer_name,
-          beer_img: data.beer_img,
-          rate: data.rate,
-        }
-      )
-    );
-
-    if (sendrecentBeerList) {
-      return res.status(200).json(sendrecentBeerList);
-    }
-    return res.status(404).send('리스트를 찾을 수 없습니다.');
-  } catch (e) {
-    return res.sendStatus(500);
-  }
-});
-
-// 인기 맥주
-// rate 높은 순으로 정렬
-// 최근 코멘트 우선순으로
-// 10개 까지 랜덤하게 정렬
-router.get('/list-popular', async (req, res) => {
-  try {
-    const popularBeerList = await Beer.findAll({
-      limit: 10,
-      raw: true,
-      attributes: ['id', 'beer_name', 'beer_img', 'rate'],
-      where: {
-        rate: {
-          [Sequelize.Op.gte]: 4, // 'rate' >= 4
-        },
-      },
-    });
-
-    const sendpopularBeerList = popularBeerList.map((data) =>
-      Object.assign(
-        {},
-        {
-          id: data.id,
-          beer_name: data.beer_name,
-          beer_img: data.beer_img,
-          rate: data.rate,
-        }
-      )
-    );
-
-    if (sendpopularBeerList) {
-      return res.status(200).json(sendpopularBeerList);
-    }
-    return res.status(404).send('리스트를 찾을 수 없습니다.');
-  } catch (e) {
-    return res.sendStatus(500);
-  }
-});
-
 // 맥주 상세 정보
-router.get('/:id', async (req, res) => {
+router.post('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { user_id } = req.body;

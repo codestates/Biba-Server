@@ -64,14 +64,7 @@ router.get('/', async (req, res) => {
           {
             model: Beer,
             as: 'getBeer',
-            attributes: ['id', 'beer_name', 'beer_img'],
-            include: [
-              {
-                model: Comment,
-                as: 'getComment',
-                attributes: ['rate'],
-              },
-            ],
+            attributes: ['id', 'beer_name', 'beer_img', 'rate'],
           },
         ],
       });
@@ -83,7 +76,7 @@ router.get('/', async (req, res) => {
             beer_id: data['getBeer.id'],
             beer_name: data['getBeer.beer_name'],
             beer_img: data['getBeer.beer_img'],
-            rate: data['getBeer.getComment.rate'],
+            rate: data['getBeer.rate'],
           }
         )
       );
