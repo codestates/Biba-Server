@@ -66,7 +66,7 @@ router.post('/:id', async (req, res) => {
     let user_input = '';
     let user_star = false;
     let user_rate = 0;
-    let user_bookmark = false;
+    let bookmark = false;
 
     // 북마크 등록되어 있는지 체크
     const bookmarkCheck = await BookMark.findOne({
@@ -78,7 +78,7 @@ router.post('/:id', async (req, res) => {
       attributes: ['user_id', 'beer_id'],
     });
     if (bookmarkCheck !== null) {
-      user_bookmark = true;
+      bookmark = true;
     }
 
     // 코멘트 체크
@@ -176,6 +176,7 @@ router.post('/:id', async (req, res) => {
       raw: true,
       attributes: ['sparkling', 'sweet', 'accessibility', 'body', 'bitter'],
     });
+    console.log(beerInfo);
 
     if (beerInfo !== null && beerGraph) {
       const sendbeerInfo = Object.assign(
@@ -187,7 +188,7 @@ router.post('/:id', async (req, res) => {
           beer_img: beerInfo.beer_img,
           abv: beerInfo.abv,
           ibu: beerInfo.ibu,
-          company: beerInfo['getComment.company'],
+          company: beerInfo['getCompany.company'],
           country: beerInfo['getCountry.country'],
           style_name: beerInfo['getStyle.style_name'],
           story: beerInfo.story,
@@ -199,7 +200,7 @@ router.post('/:id', async (req, res) => {
           user_input,
           user_star,
           user_rate,
-          user_bookmark,
+          bookmark,
           sparkling: beerGraph.sparkling,
           sweet: beerGraph.sweet,
           accessibility: beerGraph.accessibility,
