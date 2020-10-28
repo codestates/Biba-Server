@@ -1,6 +1,9 @@
 import * as express from 'express';
 import Report from '../models/report';
 import * as jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
+dotenv.config();
+const secret = process.env.JWT!;
 
 const router = express.Router();
 
@@ -9,7 +12,7 @@ router.post('/recommend', async (req, res) => {
   try {
     const { comment, token, beer_name } = req.body;
     if (token) {
-      const decoded: any = jwt.verify(token, 'secret_key');
+      const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
       const recommendPost = await Report.create({
         comment,
@@ -34,7 +37,7 @@ router.post('/request', async (req, res) => {
   try {
     const { comment, token, beer_name } = req.body;
     if (token) {
-      const decoded: any = jwt.verify(token, 'secret_key');
+      const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
       const recommendPost = await Report.create({
         comment,

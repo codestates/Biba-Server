@@ -27,7 +27,7 @@ class Beer extends Model {
   public explain!: string;
   public source!: string;
   public ['getComment.rate']: number;
-  public ['getComment.company']: string;
+  public ['getCompany.company']: string;
   public ['getCountry.country']: string;
   public ['getStyle.style_name']: string;
   public ['getBeer_tag.getTag.tag_name']: string;
