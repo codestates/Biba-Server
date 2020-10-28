@@ -5,6 +5,7 @@ import * as jwt from 'jsonwebtoken';
 import Beer from '../models/beers';
 import { IncomingHttpHeaders } from 'http';
 import AverageRate from '../modules/rate';
+import { userInfo } from 'os';
 
 const router = express.Router();
 
