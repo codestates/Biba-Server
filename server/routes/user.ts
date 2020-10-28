@@ -89,8 +89,6 @@ router.post('/profile/delete', function (req, res) {
   });
 });
 
-
-
 // * POST /users/changeNickname
 router.post('/changenickname', (req, res) => {
   let { nickname, token } = req.body;
@@ -195,11 +193,10 @@ router.post('/signup', (req, res) => {
   // user 가 회원가입 했을 때, 회원정보를 db에 저장하도록 구현.
   const { email, nickname, password, passwordForCheck } = req.body;
   if (password === passwordForCheck) {
-    
     const hashPassword = crypto
-    .createHmac('sha512', 'crypto_secret_key')
-    .update(password)
-    .digest('hex');
+      .createHmac('sha512', 'crypto_secret_key')
+      .update(password)
+      .digest('hex');
 
     User.findOne({
        where: { email },
@@ -225,11 +222,11 @@ router.post('/signup', (req, res) => {
 // * POST /users/login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
-  
+
   const hashPassword = crypto
-  .createHmac('sha512', 'crypto_secret_key')
-  .update(password)
-  .digest('hex');
+    .createHmac('sha512', 'crypto_secret_key')
+    .update(password)
+    .digest('hex');
 
   User.findOne({
     where: {
@@ -238,11 +235,7 @@ router.post('/login', (req, res) => {
     },
   })
     .then((data: any) => {
-      User.update(
-        { password: hashPassword }, 
-        { where: { email } } 
-      )
-        .then(() => {
+      User.update({ password: hashPassword }, { where: { email } }).then(() => {
         if (!data) {
           return res.status(404).send('invalid user');
         } else {
@@ -257,7 +250,7 @@ router.post('/login', (req, res) => {
             profile: data.profile,
           });
         }
-      })
+      });
     })
     .catch((err: any) => {
       res.status(404).send(err);
