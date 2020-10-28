@@ -10,29 +10,32 @@ const secret = process.env.JWT!;
 const router = express.Router();
 
 // 즐겨찾기 추가 or 삭제
-router.post('/', async (req, res) => {
+router.post('/', (req, res) => {
   try {
     const { beer_id, token } = req.body;
+    console.log(token);
+    console.log(beer_id);
     if (token) {
       const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
-      const [result, created] = await BookMark.findOrCreate({
+      BookMark.findOrCreate({
         where: {
           user_id,
           beer_id,
         },
+      }).then(([result, created]) => {
+        if (created) {
+          res.status(201).json({ bookmark: true });
+        } else {
+          BookMark.destroy({
+            where: {
+              user_id,
+              beer_id,
+            },
+          });
+          res.status(201).json({ bookmark: false });
+        }
       });
-      if (created) {
-        res.status(201).json({ bookmark: true });
-      } else {
-        BookMark.destroy({
-          where: {
-            user_id,
-            beer_id,
-          },
-        });
-        res.status(201).json({ bookmark: false });
-      }
     }
     return res.status(401).send('유저 정보를 찾을 수 없습니다.');
   } catch (e) {
