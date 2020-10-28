@@ -14,10 +14,9 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 //multer,aws-sdk,s3 연동
+const router = express.Router();
 const dirPath = path.join(__dirname, '/../config/s3.json');
 aws.config.loadFromPath(dirPath);
-
-const router = express.Router();
 
 const today = () => {
   return (
@@ -28,6 +27,11 @@ const today = () => {
     String(new Date().getMinutes())
   );
 };
+
+interface MulterRequest extends Request {
+  file: any;
+}
+
 const s3 = new aws.S3();
 const upload = multer({
   limits: {
@@ -39,40 +43,23 @@ const upload = multer({
     bucket: 'biba-user-profile',
     acl: 'public-read',
     key: (req, file, cb) => {
-      // 업로드에 인자를 받아서 
-      cb(null,  + '_' + today() + '.' + file.originalname.split('.').pop());
-
-    }, // TODO: username === nickname 가져오려면 nickname 을 body 로 받기
-  }),
+      cb(null, today() + '.' + file.originalname.split('.').pop());
+    }, // nickname 가져오려면 nickname 을 body 로 받기
+  }),  // nickname 을 받는 방법
 });
 
-
-// 업로드할 사진도 보내준다.
-
-interface MulterRequest extends Request {
-  file: any;
-}
-
 // * POST /users/profile 
-// nickname, token
 // 파일선택에서 선택한 사진을 업로드 클릭시 s3에 저장한다.
-// json으로 s3의 주소(location)를 반환하는 구조 만들기
 router.post('/profile', upload.single('image'), async (req, res) => {
   const image = (req as MulterRequest).file;
   const location = image.location;
-  // console.log('location: ', location);
   const { nickname } = req.body; 
-  console.log('req.body: ', req.body);
-  // console.log('email: ', email);
   if (image === undefined) {
     return res.status(400).send('실패');
   } else {
-    // db 에 저장하는 과정이 필요하다.
-    // 따로 client 에 보내주는 것은 없다.
     User.findOne({
       where: { nickname  },
-    }).then((data: any) => {
-      // console.log('data: ', data);
+    }).then(() => {
       User.update(
         { profile: location },
         { where: { nickname }}
@@ -85,68 +72,39 @@ router.post('/profile', upload.single('image'), async (req, res) => {
   }
 })
 
-// NOTE: { email, nickname, token } 3개 보내준다.
-// profile 은 다른곳!
-
 // * POST /users/profile/delete
 router.post('/profile/delete', function (req, res) {
-  // const image = (req as MulterRequest).file;
-  // const location = image.location;
   const {
     body: { nickname }
   } = req
   
-  // DB에서 비밀번호 삭제하기.
+  // DB에서 비밀번호 삭제 && s3 삭제
   User.findOne({
     where: { nickname }
   })
-    .then((data: any) => {
+    .then((data) => {
       if(data){
-        console.log('data: ', data.profile);
-        // des 안된다. updat 사용된다. // des 빈 "" 아니면 updat 사용하기.
-        // s3 사진 삭제 방법 찾아보기!
+        let userProfileKey = data.profile.split('/')[3];
+        s3.deleteObject({
+          Bucket : 'biba-user-profile',
+          Key: userProfileKey // 이미지 확장자까지 들어간다. 
+        }) 
         User.update(
           { profile: '' },
           { where: { nickname }}
         )
-        res.status(200).send('성공')
+        return res.status(200).send('성공')
       }
     })
     .catch(()=>{
       res.status(400).send("삭제 실패!")
   })
-
-  // s3 삭제하기
-  User.findOne({
-    raw: true,
-    where: { nickname }
-  })
-  .then((data)=> {
-    // console.log('data: ', data);
-    if(data) {
-      console.log(data.profile);
-      let userProfileKey = data.profile.split('/')[3];
-
-      s3.deleteObject({
-        Bucket : 'biba-user-profile',
-        Key: userProfileKey // 이미지 확장자까지 들어가야 한다. 
-      }, 
-      function(err, data) {
-        if(err) {
-          return console.log(err);
-        } 
-        res.send('삭제 성공?');
-      });
-    }
-  });
-
 });
 
 // * POST /users/changeNickname
 router.post('/changenickname', (req, res) => {
   let { nickname, token } = req.body;
   // let token: any = req.headers.token;
-
   const decoded_data: any = jwt.verify(token, process.env.JWT!);
 
   User.findOne({
@@ -182,9 +140,6 @@ router.post('/changepassword', (req, res) => {
   // crypto 적용
   // 단방향이며, 비번 변경시 비밀키는 동일하므로 항상 요청시 동일한 암호화된 비밀번호를 DB에서 확인할 수 있다.
 
-  // const shasum = crypto.createHmac('sha512', 'crypto_secret_key');
-  // shasum.update(newPassword);
-  // newPassword = shasum.digest('hex');
   const saltedPassword = newPassword + process.env.SALT!;
   const hashPassword = crypto
     .createHmac('sha512', process.env.CRYPTO!)
@@ -195,12 +150,11 @@ router.post('/changepassword', (req, res) => {
   User.findOne({
     where: { email: decoded_data.data }, // TODO: string 설정을 제외하는 방법?
   }).then((data: any) => {
-    // console.log('data: ', data);
     data.dataValues.password !== hashPassword
       ? // NOTE: User.update({password: '새로운 유저PW'}, {where: {userID: '유저ID'}})
         User.update(
-          { password: hashPassword }, // 새로운 pass를 넣는다. // pk 는 업데이트 불가능
-          { where: { email: decoded_data.data } } // 유저 email
+          { password: hashPassword }, 
+          { where: { email: decoded_data.data } } 
         )
           .then(() => {
             res.status(200).send('비밀번호 변경에 성공하셨습니다.');
@@ -213,7 +167,6 @@ router.post('/changepassword', (req, res) => {
 });
 
 // * POST /users/checkemail, 이메일 중복 체크
-// client 측에서 email 확인 버튼을 눌렀을 때, server 측에서 유효성 검사 후 send!
 router.post('/checkemail', (req, res) => {
   const { email } = req.body;
 
@@ -240,7 +193,6 @@ router.post('/checknickname', (req, res) => {
       ? res.status(409).send('존재하는 닉네임 입니다.')
       : res.status(200).send('사용가능한 닉네임 입니다.');
   });
-  // catch
 });
 
 // * POST /users/signup
@@ -291,7 +243,6 @@ router.post('/login', (req, res) => {
     .createHmac('sha512', process.env.CRYPTO!)
     .update(saltedPassword)
     .digest('hex');
-  console.log('로그인 할 때 ::', hashPassword);
 
   User.findOne({
     where: {
