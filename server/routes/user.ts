@@ -37,8 +37,15 @@ const upload = multer({
     bucket: 'biba-user-profile',
     acl: 'public-read',
     key: (req, file, cb) => {
-      // 업로드에 인자를 받아서 
-      cb(null, file.originalname.split('.')[0] + '_' + today() + '.' + file.originalname.split('.').pop());
+      // 업로드에 인자를 받아서
+      cb(
+        null,
+        file.originalname.split('.')[0] +
+          '_' +
+          today() +
+          '.' +
+          file.originalname.split('.').pop()
+      );
     }, // TODO: username === nickname 가져오려면 nickname 을 body 로 받기
   }),
 });
@@ -53,7 +60,7 @@ const upload = multer({
 //   const documentFile = req.file;
 // }
 
-// * POST /users/profile 
+// * POST /users/profile
 // 파일선택에서 선택한 사진을 업로드 클릭시 s3에 저장한다.
 // json으로 s3의 주소(location)를 반환하는 구조 만들기
 router.post('/profile', upload.single('image'), async (req, res) => {
@@ -78,18 +85,20 @@ router.post('/profile', upload.single('image'), async (req, res) => {
 //   res.json(imgFile);
 // });
 
-// * POST /users/profile/delete  
+// * POST /users/profile/delete
 router.post('/profile/delete', function (req, res) {
-  s3.deleteObject({
-    Bucket : 'biba-user-profile',
-    Key: 'location' // req.file.location 이용 안하고 키값을 넣는 방법?
-  }, 
-  function(err, data) {
-    if(err) {
-      return console.log(err);
-    } 
-    res.send();
-  });
+  s3.deleteObject(
+    {
+      Bucket: 'biba-user-profile',
+      Key: 'location', // req.file.location 이용 안하고 키값을 넣는 방법?
+    },
+    function (err, data) {
+      if (err) {
+        return console.log(err);
+      }
+      res.send();
+    }
+  );
 });
 
 // * POST /users/changeNickname
@@ -202,48 +211,47 @@ router.post('/signup', (req, res) => {
       .digest('hex');
 
     User.findOne({
-       where: { email },
-     }).then((data: any) => {
-       data
-         ? res.status(409).send('Already exist user')
-         : User.create({
-             email,
-             nickname,
-             password,
-           }).then(() => {
-            User.update(
-              { password: hashPassword }, 
-              { where: { email } } 
-            );
-            res.status(200).send('성공적으로 회원가입 하셨습니다.');
-        })
+      where: { email },
+    })
+      .then((data: any) => {
+        data
+          ? res.status(409).send('Already exist user')
+          : User.create({
+              email,
+              nickname,
+              password,
+            }).then(() => {
+              User.update({ password: hashPassword }, { where: { email } });
+              res.status(200).send('성공적으로 회원가입 하셨습니다.');
+            });
       })
-      .catch(()=>{
+      .catch(() => {
         res.status(404).send('비밀번호 입력을 동일하게 해주세요!');
-      })
-    }
+      });
+  }
 });
-
-
 
 // * POST /users/login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
   const hashPassword = crypto
     .createHmac('sha512', 'crypto_secret_key')
-    .update(password + process.env.SALT) 
+    .update(password + process.env.SALT)
     .digest('hex');
 
   User.findOne({
     where: {
       email: email,
-      password: hashPassword  
+      password: hashPassword,
     },
   })
     .then((data: any) => {
       if (data) {
-        User.update({ password: hashPassword }, { where: { email } });  
-        let token = jwt.sign({ data: email, userId: data.id }, process.env.JWT!); 
+        User.update({ password: hashPassword }, { where: { email } });
+        let token = jwt.sign(
+          { data: email, userId: data.id },
+          process.env.JWT!
+        );
         res.status(200).json({
           userData: {
             id: data.id,
@@ -253,9 +261,9 @@ router.post('/login', (req, res) => {
           token: token,
           profile: data.profile,
         });
-        } else {
-          return res.status(404).send('invalid user');      
-        }
+      } else {
+        return res.status(404).send('invalid user');
+      }
     })
     .catch((err: any) => {
       res.status(404).send(err);
