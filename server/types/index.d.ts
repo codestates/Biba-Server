@@ -13,7 +13,7 @@ declare global {
       interface File {
         location: string;
       }
-      
+
       interface Request {
         /** `Multer.File` object populated by `single()` middleware. */
         file: Multer.File;
