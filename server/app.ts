@@ -31,6 +31,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // TODO: true 사용 이유?
 
 //sequelize sync
+// sequelize.sync();
 sequelize
   .sync({ force: false }) // NOTE: db 실행시 초기화 할건지?(true: 초기화)
   .then(() => {
