@@ -20,6 +20,7 @@ import searchWord from './routes/search';
 import commentRouter from './routes/comment';
 import bookMarkRouter from './routes/bookmark';
 import reportRouter from './routes/report';
+import categoryRouter from './routes/category';
 
 const app = express();
 const port = 4000;
@@ -66,9 +67,9 @@ app.use(
 app.use('/users', usersRouter);
 //app.use('/socials/google', googleRouter);
 
-
 // Beer Router
 app.use('/beer', beerRouter);
+app.use('/category', categoryRouter);
 app.use('/tag', tagRouter);
 app.use('/style', styleRouter);
 app.use('/search', searchWord);
