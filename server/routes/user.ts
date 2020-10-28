@@ -39,57 +39,107 @@ const upload = multer({
     bucket: 'biba-user-profile',
     acl: 'public-read',
     key: (req, file, cb) => {
-      // 업로드에 인자를 받아서
-      cb(
-        null,
-        file.originalname.split('.')[0] +
-          '_' +
-          today() +
-          '.' +
-          file.originalname.split('.').pop()
-      );
+      // 업로드에 인자를 받아서 
+      cb(null,  + '_' + today() + '.' + file.originalname.split('.').pop());
+
     }, // TODO: username === nickname 가져오려면 nickname 을 body 로 받기
   }),
 });
 
-// NOTE: { email, nickname, token } 3개 보내준다.
+
+// 업로드할 사진도 보내준다.
 
 interface MulterRequest extends Request {
   file: any;
 }
 
-// * POST /users/profile
+// * POST /users/profile 
+// nickname, token
 // 파일선택에서 선택한 사진을 업로드 클릭시 s3에 저장한다.
 // json으로 s3의 주소(location)를 반환하는 구조 만들기
 router.post('/profile', upload.single('image'), async (req, res) => {
   const image = (req as MulterRequest).file;
   const location = image.location;
+  // console.log('location: ', location);
+  const { nickname } = req.body; 
+  console.log('req.body: ', req.body);
+  // console.log('email: ', email);
   if (image === undefined) {
     return res.status(400).send('실패');
+  } else {
+    // db 에 저장하는 과정이 필요하다.
+    // 따로 client 에 보내주는 것은 없다.
+    User.findOne({
+      where: { nickname  },
+    }).then((data: any) => {
+      // console.log('data: ', data);
+      User.update(
+        { profile: location },
+        { where: { nickname }}
+      );
+      res.status(200).json({profile: location});
+    })
+    .catch(()=>{
+      res.status(400).send("DB에 저장 실패!")
+    })
   }
-  res.status(200).json(location);
-});
+})
+
+// NOTE: { email, nickname, token } 3개 보내준다.
+// profile 은 다른곳!
 
 // * POST /users/profile/delete
 router.post('/profile/delete', function (req, res) {
-  const image = (req as MulterRequest).file;
-  // const {
-  //   body: { email }
-  // } = req
-
-  s3.deleteObject(
-    {
-      Bucket: 'biba-user-profile',
-
-      Key: image.key, //
-    },
-    function (err, data) {
-      if (err) {
-        return console.log(err);
+  // const image = (req as MulterRequest).file;
+  // const location = image.location;
+  const {
+    body: { nickname }
+  } = req
+  
+  // DB에서 비밀번호 삭제하기.
+  User.findOne({
+    where: { nickname }
+  })
+    .then((data: any) => {
+      if(data){
+        console.log('data: ', data.profile);
+        // des 안된다. updat 사용된다. // des 빈 "" 아니면 updat 사용하기.
+        // s3 사진 삭제 방법 찾아보기!
+        User.update(
+          { profile: '' },
+          { where: { nickname }}
+        )
+        res.status(200).send('성공')
       }
-      res.send('삭제 성공?');
+    })
+    .catch(()=>{
+      res.status(400).send("삭제 실패!")
+  })
+
+  // s3 삭제하기
+  User.findOne({
+    raw: true,
+    where: { nickname }
+  })
+  .then((data)=> {
+    // console.log('data: ', data);
+    if(data) {
+      console.log(data.profile);
+      let userProfileKey = data.profile.split('/')[3];
+
+      s3.deleteObject({
+        Bucket : 'biba-user-profile',
+        Key: userProfileKey // 이미지 확장자까지 들어가야 한다. 
+      }, 
+      function(err, data) {
+        if(err) {
+          return console.log(err);
+        } 
+        res.send('삭제 성공?');
+      });
     }
-  );
+  });
+
 });
 
 // * POST /users/changeNickname
@@ -172,6 +222,7 @@ router.post('/checkemail', (req, res) => {
   })
     // TODO: any 말고 사용하는 방법? ts 찾아보기!
     .then((data: any) => {
+      console.log('data: ', data);
       data
         ? res.status(409).send('존재하는 이메일 입니다.')
         : res.status(200).send('사용가능한 이메일 입니다.');
