@@ -46,6 +46,7 @@ const upload = multer({
 });
 
 // NOTE: { email, nickname, token } 3개 보내준다.
+// 업로드할 사진도 보내준다.
 
 interface MulterRequest extends Request {
   file: any;
@@ -60,6 +61,8 @@ router.post('/profile', upload.single('image'), async (req, res) => {
   if (image === undefined) {
     return res.status(400).send('실패');
   }
+  // db 에 저장하는 과정이 필요하다.
+  // 따로 client 에 보내주는 것은 없다.
   res.status(200).json(location);
 });
 
@@ -130,7 +133,7 @@ router.post('/changepassword', (req, res) => {
 
   const hashPassword = crypto
     .createHmac('sha512', process.env.CRYPTO!)
-    .update(newPassword)
+    .update(newPassword + process.env.SALT)
     .digest('hex');
 
   User.findOne({
@@ -163,6 +166,7 @@ router.post('/checkemail', (req, res) => {
   })
     // TODO: any 말고 사용하는 방법? ts 찾아보기!
     .then((data: any) => {
+      console.log('data: ', data);
       data
         ? res.status(409).send('존재하는 이메일 입니다.')
         : res.status(200).send('사용가능한 이메일 입니다.');
