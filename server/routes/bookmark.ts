@@ -3,6 +3,9 @@ import Beer from '../models/beers';
 import BookMark from '../models/bookmark';
 import Comment from '../models/comments';
 import * as jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
+dotenv.config();
+const secret = process.env.JWT!;
 
 const router = express.Router();
 
@@ -11,7 +14,7 @@ router.post('/', async (req, res) => {
   try {
     const { beer_id, token } = req.body;
     if (token) {
-      const decoded: any = jwt.verify(token, 'secret_key');
+      const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
       const [result, created] = await BookMark.findOrCreate({
         where: {
@@ -52,7 +55,7 @@ router.get('/', async (req, res) => {
   const { token } = req.body;
   try {
     if (token) {
-      const decoded: any = jwt.verify(token, 'secret_key');
+      const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
       const userBookMarkList = await BookMark.findAll({
         raw: true,
