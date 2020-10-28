@@ -28,24 +28,65 @@ const today = () => {
 const s3 = new aws.S3();
 const upload = multer({
   limits: {
-    fileSize: 1024 * 2,
+    fileSize: 1024 * 2000,
   },
   storage: multerS3({
     s3: s3,
     bucket: 'biba-user-profile',
     acl: 'public-read',
     key: (req, file, cb) => {
-      cb(null, today() + '.' + file.originalname.split('.').pop());
-    }, // 유저 아이디 붙여서 +
+      // 업로드에 인자를 받아서 
+      cb(null, file.originalname.split('.')[0] + '_' + today() + '.' + file.originalname.split('.').pop());
+    }, // TODO: username === nickname 가져오려면 nickname 을 body 로 받기
   }),
 });
+
+// NOTE: { email, nickname, token } 3개 보내준다.
+
+// interface MulterRequest extends Request {
+//   file: any;
+// }
+
+// public document = async (req: MulterRequest, res: Response): Promise<any> => {
+//   const documentFile = req.file;
+// }
+
+// * POST /users/profile 
+// 파일선택에서 선택한 사진을 업로드 클릭시 s3에 저장한다.
 router.post('/profile', upload.single('image'), async (req, res) => {
   const image = req.file;
   console.log(image);
+  // const location = image.location;
+  // console.log('location: ', location);
   if (image === undefined) {
     return res.status(400).send('실패');
   }
   res.status(200).send('성공');
+});
+
+// let location = '';
+// let imgFile: any;
+
+// 참고: 위와 기능 동일
+// router.post("/upload", upload.single('file'), function(req, res) {
+//   imgFile = req.file;
+//   location = imgFile.location;
+//   // console.log('location: ', location);
+//   res.json(imgFile);
+// });
+
+// * POST /users/profile/delete  
+router.post('/profile/delete', function (req, res) {
+  s3.deleteObject({
+    Bucket : 'biba-user-profile',
+    Key: 'location' // req.file.location 이용 안하고 키값을 넣는 방법?
+  }, 
+  function(err, data) {
+    if(err) {
+      return console.log(err);
+    } 
+    res.send();
+  });
 });
 
 // * POST /users/changeNickname
@@ -158,21 +199,24 @@ router.post('/signup', (req, res) => {
       .digest('hex');
 
     User.findOne({
-      where: { email },
-    }).then((data: any) => {
-      data
-        ? res.status(409).send('Already exist user')
-        : User.create({
-            email,
-            nickname,
-            password,
-          }).then(() => {
-            User.update({ password: hashPassword }, { where: { email } });
-            res.status(200).send('성공적으로 로그인 하셨습니다.');
-          });
-    });
-  }
-  // res.status(404).send('비밀번호 입력을 동일하게 해주세요!');
+       where: { email },
+     }).then((data: any) => {
+       data
+         ? res.status(409).send('Already exist user')
+         : User.create({
+             email,
+             nickname,
+             password,
+           }).then(() => {
+            User.update(
+              { password: hashPassword }, 
+              { where: { email } } 
+            );
+            res.status(200).send('성공적으로 회원가입 하셨습니다.');
+        })
+      })
+    }
+    res.status(404).send('비밀번호 입력을 동일하게 해주세요!');
 });
 
 // * POST /users/login
