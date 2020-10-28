@@ -13,11 +13,10 @@ const router = express.Router();
 router.post('/', (req, res) => {
   try {
     const { beer_id, token } = req.body;
-    console.log(token);
-    console.log(beer_id);
     if (token) {
       const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
+      console.log('확인!!!!', decoded);
       BookMark.findOrCreate({
         where: {
           user_id,
@@ -36,8 +35,9 @@ router.post('/', (req, res) => {
           res.status(201).json({ bookmark: false });
         }
       });
+    } else {
+      return res.status(401).send('유저 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('유저 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }
