@@ -102,7 +102,7 @@ router.post('/:id', async (req, res) => {
       }
     }
     // 평균 별점
-    AverageRate(id, rate);
+    AverageRate(id);
 
     const beerInfo = await Beer.findOne({
       attributes: [
