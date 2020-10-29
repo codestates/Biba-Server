@@ -46,61 +46,59 @@ const upload = multer({
     acl: 'public-read',
     key: (req, file, cb) => {
       cb(null, today() + '.' + file.originalname.split('.').pop());
-    }, 
-  }),  
+    },
+  }),
 });
 
-// * POST /users/profile 
+// * POST /users/profile
 // 선택한 사진(한개)을 업로드 시 s3에 저장한다.
 router.post('/profile', upload.single('image'), async (req, res) => {
   const image = (req as MulterRequest).file;
   const location = image.location;
-  const { nickname } = req.body; 
+  const { nickname } = req.body;
   if (image === undefined) {
     return res.status(400).send('실패');
   } else {
     User.findOne({
       where: { nickname },
-    }).then(() => {
-      User.update(
-        { profile: location },
-        { where: { nickname }}
-      );
-      res.status(200).json({ profile: location });
     })
-    .catch(()=>{
-      res.status(400).send("DB에 저장 실패!")
-    })
+      .then(() => {
+        User.update({ profile: location }, { where: { nickname } });
+        res.status(200).json({ profile: location });
+      })
+      .catch(() => {
+        res.status(400).send('DB에 저장 실패!');
+      });
   }
-})
+});
 
 // * POST /users/profile/delete
 // DB 의 profile 삭제 && s3 img 삭제
 router.post('/profile/delete', function (req, res) {
   const {
-    body: { nickname }
-  } = req
-  
+    body: { nickname },
+  } = req;
+
   User.findOne({
-    where: { nickname }
+    where: { nickname },
   })
     .then((data) => {
-      if(data){
+      if (data) {
         let userProfileKey = data.profile.split('/')[3];
-        s3.deleteObject({
-          Bucket : 'biba-user-profile',
-          Key: userProfileKey // 이미지 확장자까지 들어간다. 
-        }) 
-        User.update(
-          { profile: '' },
-          { where: { nickname }}
-        )
-        return res.status(200).send('성공')
+        s3.deleteObject(
+          {
+            Bucket: 'biba-user-profile',
+            Key: userProfileKey,
+          },
+          function (err, data) {}
+        );
+        User.update({ profile: '' }, { where: { nickname } });
+        return res.status(200).send('성공');
       }
     })
-    .catch(()=>{
-      res.status(400).send("삭제 실패!")
-  })
+    .catch(() => {
+      res.status(400).send('삭제 실패!');
+    });
 });
 
 // * POST /users/changeNickname , 닉네임 변경
@@ -149,13 +147,12 @@ router.post('/changepassword', (req, res) => {
   console.log('비밀번호 변경 할 때 ::', hashPassword);
 
   User.findOne({
-    where: { email: decoded_data.data }, 
+    where: { email: decoded_data.data },
   }).then((data: any) => {
     data.dataValues.password !== hashPassword
-      ? 
-        User.update(
-          { password: hashPassword }, 
-          { where: { email: decoded_data.data } } 
+      ? User.update(
+          { password: hashPassword },
+          { where: { email: decoded_data.data } }
         )
           .then(() => {
             res.status(200).send('비밀번호 변경에 성공하셨습니다.');
@@ -173,13 +170,12 @@ router.post('/checkemail', (req, res) => {
 
   User.findOne({
     where: { email },
-  })
-    .then((data: any) => {
-      console.log('data: ', data);
-      data
-        ? res.status(409).send('존재하는 이메일 입니다.')
-        : res.status(200).send('사용가능한 이메일 입니다.');
-    });
+  }).then((data: any) => {
+    console.log('data: ', data);
+    data
+      ? res.status(409).send('존재하는 이메일 입니다.')
+      : res.status(200).send('사용가능한 이메일 입니다.');
+  });
 });
 
 // * POST /users/checknickname, 닉네임 중복 체크
