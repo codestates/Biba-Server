@@ -1,7 +1,14 @@
 //declare Express
 import * as express from 'express';
+import * as session from 'express-session'
 import { Request, Response } from 'express';
 import { sequelize } from './models';
+import * as passport from 'passport';
+import * as google from 'passport-google-oauth';
+import * as chalk from 'chalk'
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import User from './models/user';
+//google.OAuth2Strategy;
 
 //middleware
 import * as morgan from 'morgan';
@@ -24,8 +31,20 @@ import reportRouter from './routes/report';
 const app = express();
 const port = 4000;
 dotenv.config();
+let user = {};
 
 //use middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET || '',
+  resave: false,
+  saveUninitialized: true,
+  // cookie: {	
+  //   httpOnly: true,
+  //   secure: true
+  // }
+}))
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // TODO: true 사용 이유?
@@ -41,6 +60,7 @@ sequelize
   });
 
 //middleware
+
 app.use(
   cors({
     origin: [
@@ -61,6 +81,49 @@ app.use(
     ],
   })
 );
+// app.use('/auth', createProxyMiddleware({ target: 'http://localhost:3000', changeOrigin: true }))
+
+
+// passport google
+passport.serializeUser((user, cb) => { // Strategy 성공 시 호출됨
+  cb(null, user); // 여기의 user가 deserializeUser의 첫 번째 매개변수로 이동
+});
+
+passport.deserializeUser((user, cb) => { // 매개변수 user는 serializeUser의 done의 인자 user를 받은 것
+  cb(null, user); // 여기의 user가 req.user가 됨
+});
+
+passport.use(new google.OAuth2Strategy({
+  clientID: process.env.GOOGLE_CLIENT_ID || '',
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+  callbackURL: "http://localhost:4000/auth/google/callback",
+}, 
+function(
+  accessToken: string,
+  refreshToken: string,
+  profile: google.Profile,
+  cb
+) {
+  // id, name, email, nickname
+  console.log(chalk.blue(JSON.stringify(profile)))
+  // User.findOrCreate({ where: email }
+  user = { ...profile }
+  return cb(null, profile)
+}
+)
+);
+
+// google router
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google'),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    console.log("res",res)
+    res.redirect('/login');
+  });
 
 // User Router
 app.use('/users', usersRouter);
@@ -77,6 +140,9 @@ app.use('/bookmark', bookMarkRouter);
 app.use('/report', reportRouter);
 
 app.get('/', (req: Request, res: Response) => {
+  let sess: any = req.session
+  console.log(sess.user_id)
+  
   res.status(200).send('Success!');
 });
 

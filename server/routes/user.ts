@@ -10,6 +10,7 @@ import * as multerS3 from 'multer-s3';
 import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
+import { AnyLengthString } from 'aws-sdk/clients/comprehend';
 dotenv.config();
 
 //multer,aws-sdk,s3 연동
@@ -212,7 +213,7 @@ router.post('/signup', (req, res) => {
              password,
            }).then(() => {
             User.update(
-              { password: hashPassword }, 
+              { password: password }, 
               { where: { email } } 
             );
             res.status(200).send('성공적으로 회원가입 하셨습니다.');
@@ -233,17 +234,19 @@ router.post('/login', (req, res) => {
     .createHmac('sha512', 'crypto_secret_key')
     .update(password + process.env.SALT) 
     .digest('hex');
+  const sess: any = req.session;
 
   User.findOne({
     where: {
       email: email,
-      password: hashPassword  
+      password: password  
     },
   })
     .then((data: any) => {
       if (data) {
-        User.update({ password: hashPassword }, { where: { email } });  
-        let token = jwt.sign({ data: email, userId: data.id }, process.env.JWT!); 
+        sess.user_id = data.id
+        User.update({ password: password }, { where: { email } });  
+        let token = jwt.sign({ data: email, userId: data.id }, 'jwt');
         res.status(200).json({
           userData: {
             id: data.id,
