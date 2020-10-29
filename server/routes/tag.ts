@@ -35,14 +35,7 @@ router.get('/:tag_id', async (req, res) => {
       include: [
         {
           model: Beer,
-          attributes: ['id', 'beer_name', 'beer_img'],
-          include: [
-            {
-              model: Comment,
-              as: 'getComment',
-              attributes: ['rate'],
-            },
-          ],
+          attributes: ['id', 'beer_name', 'beer_img', 'rate'],
         },
       ],
     });
@@ -54,7 +47,7 @@ router.get('/:tag_id', async (req, res) => {
           beer_id: data['Beer.id'],
           beer_name: data['Beer.beer_name'],
           beer_img: data['Beer.beer_img'],
-          rate: data['Beer.getComment.rate'],
+          rate: data['Beer.rate'],
         }
       )
     );
