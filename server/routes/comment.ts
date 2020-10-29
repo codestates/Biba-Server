@@ -5,6 +5,9 @@ import * as jwt from 'jsonwebtoken';
 import Beer from '../models/beers';
 import { IncomingHttpHeaders } from 'http';
 import AverageRate from '../modules/rate';
+import * as dotenv from 'dotenv';
+dotenv.config();
+const secret = process.env.JWT!;
 
 const router = express.Router();
 
@@ -55,7 +58,7 @@ router.post('/mylist', async (req, res) => {
   try {
     const { token } = req.body;
     if (token) {
-      const decoded: any = jwt.verify(token, 'secret_key');
+      const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
       const myCommentList = await Comment.findAll({
         where: {
@@ -95,8 +98,9 @@ router.post('/mylist', async (req, res) => {
         return res.status(200).json(sendMyList);
       }
       return res.send('코멘트를 찾을 수 없습니다.');
+    } else {
+      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('회원 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }
@@ -121,7 +125,7 @@ router.post('/create', async (req, res) => {
   try {
     const { comment, rate, beer_id, token } = req.body;
     if (token) {
-      const decoded: any = jwt.verify(token, 'secret_key');
+      const decoded: any = jwt.verify(token, secret);
       console.log('decoded', decoded);
       const user_id = decoded.userId;
       const createComment = await Comment.create({
@@ -135,8 +139,9 @@ router.post('/create', async (req, res) => {
         return res.status(201).send('코멘트 생성');
       }
       return res.status(400).send('잘못된 요청입니다.');
+    } else {
+      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('회원 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }
@@ -145,24 +150,19 @@ router.post('/create', async (req, res) => {
 // 코멘트 수정
 router.post('/update', async (req, res) => {
   try {
-    const { comment, rate, id, token, beer_id } = req.body;
-    const userCheck = await Comment.findOne({
-      where: {
-        id,
-      },
-    });
+    const { comment, rate, token, beer_id } = req.body;
 
-    if (token && userCheck !== null) {
-      const decoded: any = jwt.verify(token, 'secret_key');
+    if (token) {
+      const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
-      if (userCheck.user_id === user_id) {
+      if (user_id) {
         const updateComment = await Comment.update(
           {
             rate,
             comment,
           },
           {
-            where: { id },
+            where: { user_id },
           }
         ).catch(() => res.sendStatus(500));
         if (updateComment) {
@@ -172,8 +172,9 @@ router.post('/update', async (req, res) => {
         return res.status(400).send('잘못된 요청입니다.');
       }
       return res.status(403).send('삭제 권한이 없습니다.');
+    } else {
+      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('회원 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }
@@ -182,22 +183,18 @@ router.post('/update', async (req, res) => {
 // 코멘트 삭제
 router.post('/delete', async (req, res) => {
   try {
-    let { id, token } = req.body;
+    const { token, beer_id } = req.body;
+    // 깃북 아이디 받는 부분 없애기
 
-    const userCheck: any = await Comment.findOne({
-      where: {
-        id,
-      },
-    }).catch(() => res.sendStatus(500));
-
-    if (token && userCheck !== null) {
-      const decoded: any = jwt.verify(token, 'secret_key');
+    if (token) {
+      const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
       // 토큰이 있을때 토큰에서 찾은 유저 아이디와 삭제하려는 멘트의 유저 아이디가 일치
-      if (userCheck.user_id === user_id) {
+      if (user_id) {
         const deleteComment = await Comment.destroy({
           where: {
-            id,
+            user_id,
+            beer_id,
           },
         }).catch((err) => res.sendStatus(500));
         if (deleteComment) {
@@ -206,8 +203,9 @@ router.post('/delete', async (req, res) => {
         return res.status(400).send('잘못 된 요청입니다.');
       }
       return res.status(403).send('삭제 권한이 없습니다.');
+    } else {
+      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('회원 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }

@@ -3,35 +3,40 @@ import Beer from '../models/beers';
 import BookMark from '../models/bookmark';
 import Comment from '../models/comments';
 import * as jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
+dotenv.config();
+const secret = process.env.JWT!;
 
 const router = express.Router();
 
 // 즐겨찾기 추가 or 삭제
-router.post('/', async (req, res) => {
+router.post('/', (req, res) => {
   try {
     const { beer_id, token } = req.body;
     if (token) {
-      const decoded: any = jwt.verify(token, 'secret_key');
+      const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
-      const [result, created] = await BookMark.findOrCreate({
+      BookMark.findOrCreate({
         where: {
           user_id,
           beer_id,
         },
+      }).then(([result, created]) => {
+        if (created) {
+          res.status(201).json({ bookmark: true });
+        } else {
+          BookMark.destroy({
+            where: {
+              user_id,
+              beer_id,
+            },
+          });
+          res.status(201).json({ bookmark: false });
+        }
       });
-      if (created) {
-        res.status(201).json({ bookmark: true });
-      } else {
-        BookMark.destroy({
-          where: {
-            user_id,
-            beer_id,
-          },
-        });
-        res.status(201).json({ bookmark: false });
-      }
+    } else {
+      return res.status(401).send('유저 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('유저 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }
@@ -52,7 +57,7 @@ router.get('/', async (req, res) => {
   const { token } = req.body;
   try {
     if (token) {
-      const decoded: any = jwt.verify(token, 'secret_key');
+      const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
       const userBookMarkList = await BookMark.findAll({
         raw: true,
@@ -64,14 +69,7 @@ router.get('/', async (req, res) => {
           {
             model: Beer,
             as: 'getBeer',
-            attributes: ['id', 'beer_name', 'beer_img'],
-            include: [
-              {
-                model: Comment,
-                as: 'getComment',
-                attributes: ['rate'],
-              },
-            ],
+            attributes: ['id', 'beer_name', 'beer_img', 'rate'],
           },
         ],
       });
@@ -83,7 +81,7 @@ router.get('/', async (req, res) => {
             beer_id: data['getBeer.id'],
             beer_name: data['getBeer.beer_name'],
             beer_img: data['getBeer.beer_img'],
-            rate: data['getBeer.getComment.rate'],
+            rate: data['getBeer.rate'],
           }
         )
       );

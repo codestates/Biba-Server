@@ -1,6 +1,7 @@
 //declare Express
 import * as express from 'express';
 import User from '../models/user';
+import { Request, Response } from 'express';
 
 //middleware
 import * as jwt from 'jsonwebtoken';
@@ -14,10 +15,9 @@ import { AnyLengthString } from 'aws-sdk/clients/comprehend';
 dotenv.config();
 
 //multer,aws-sdk,s3 연동
+const router = express.Router();
 const dirPath = path.join(__dirname, '/../config/s3.json');
 aws.config.loadFromPath(dirPath);
-
-const router = express.Router();
 
 const today = () => {
   return (
@@ -28,77 +28,85 @@ const today = () => {
     String(new Date().getMinutes())
   );
 };
+
+// location 타입에러 해결을 위한 file 설정
+interface MulterRequest extends Request {
+  file: any;
+}
+
+// aws s3 객체 생성 및 multer upload setting
 const s3 = new aws.S3();
 const upload = multer({
   limits: {
     fileSize: 1024 * 2000,
   },
+
   storage: multerS3({
     s3: s3,
     bucket: 'biba-user-profile',
     acl: 'public-read',
     key: (req, file, cb) => {
-      // 업로드에 인자를 받아서 
-      cb(null, file.originalname.split('.')[0] + '_' + today() + '.' + file.originalname.split('.').pop());
-    }, // TODO: username === nickname 가져오려면 nickname 을 body 로 받기
+      cb(null, today() + '.' + file.originalname.split('.').pop());
+    },
   }),
 });
 
-// NOTE: { email, nickname, token } 3개 보내준다.
-
-// interface MulterRequest extends Request {
-//   file: any;
-// }
-
-// public document = async (req: MulterRequest, res: Response): Promise<any> => {
-//   const documentFile = req.file;
-// }
-
-// * POST /users/profile 
-// 파일선택에서 선택한 사진을 업로드 클릭시 s3에 저장한다.
-// json으로 s3의 주소(location)를 반환하는 구조 만들기
+// * POST /users/profile
+// 선택한 사진(한개)을 업로드 시 s3에 저장한다.
 router.post('/profile', upload.single('image'), async (req, res) => {
-  const image = req.file;
-  console.log(image);
-  // const location = image.location;
-  // console.log('location: ', location);
+  const image = (req as MulterRequest).file;
+  const location = image.location;
+  const { nickname } = req.body;
   if (image === undefined) {
     return res.status(400).send('실패');
+  } else {
+    User.findOne({
+      where: { nickname },
+    })
+      .then(() => {
+        User.update({ profile: location }, { where: { nickname } });
+        res.status(200).json({ profile: location });
+      })
+      .catch(() => {
+        res.status(400).send('DB에 저장 실패!');
+      });
   }
-  res.status(200).send('성공');
 });
 
-// let location = '';
-// let imgFile: any;
-
-// 참고: 위와 기능 동일
-// router.post("/upload", upload.single('file'), function(req, res) {
-//   imgFile = req.file;
-//   location = imgFile.location;
-//   // console.log('location: ', location);
-//   res.json(imgFile);
-// });
-
-// * POST /users/profile/delete  
+// * POST /users/profile/delete
+// DB 의 profile 삭제 && s3 img 삭제
 router.post('/profile/delete', function (req, res) {
-  s3.deleteObject({
-    Bucket : 'biba-user-profile',
-    Key: 'location' // req.file.location 이용 안하고 키값을 넣는 방법?
-  }, 
-  function(err, data) {
-    if(err) {
-      return console.log(err);
-    } 
-    res.send();
-  });
+  const {
+    body: { nickname },
+  } = req;
+
+  User.findOne({
+    where: { nickname },
+  })
+    .then((data) => {
+      if (data) {
+        let userProfileKey = data.profile.split('/')[3];
+        s3.deleteObject(
+          {
+            Bucket: 'biba-user-profile',
+            Key: userProfileKey,
+          },
+          function (err, data) {}
+        );
+        User.update({ profile: '' }, { where: { nickname } });
+        return res.status(200).send('성공');
+      }
+    })
+    .catch(() => {
+      res.status(400).send('삭제 실패!');
+    });
 });
 
-// * POST /users/changeNickname
+// * POST /users/changeNickname , 닉네임 변경
 router.post('/changenickname', (req, res) => {
   let { nickname, token } = req.body;
   // let token: any = req.headers.token;
-
-  const decoded_data: any = jwt.verify(token, 'secret_key');
+  const decoded_data: any = jwt.verify(token, process.env.JWT!);
 
   User.findOne({
     where: { email: decoded_data.data },
@@ -121,36 +129,31 @@ router.post('/changenickname', (req, res) => {
   });
 });
 
-// * POST /users/changePassword
+// * POST /users/changePassword , 비밀번호 변경
 router.post('/changepassword', (req, res) => {
   let { currentPassword, newPassword, token } = req.body;
   // let token: any = req.headers.token;
 
-  const decoded_data: any = jwt.verify(token, 'secret_key');
+  const decoded_data: any = jwt.verify(token, process.env.JWT!);
   // const decoded_data: string | object = jwt.verify(token, 'secret_key');
   // console.log('decoded_data: ', decoded_data);
 
-  // crypto 적용
-  // 단방향이며, 비번 변경시 비밀키는 동일하므로 항상 요청시 동일한 암호화된 비밀번호를 DB에서 확인할 수 있다.
+  // crypto: 단방향이며, 비번 변경시 비밀키는 동일하므로 항상 요청시 동일한 암호화된 비밀번호를 DB에서 확인할 수 있다.
 
-  // const shasum = crypto.createHmac('sha512', 'crypto_secret_key');
-  // shasum.update(newPassword);
-  // newPassword = shasum.digest('hex');
-
+  const saltedPassword = newPassword + process.env.SALT!;
   const hashPassword = crypto
-    .createHmac('sha512', 'crypto_secret_key')
-    .update(newPassword)
+    .createHmac('sha512', process.env.CRYPTO!)
+    .update(saltedPassword)
     .digest('hex');
+  console.log('비밀번호 변경 할 때 ::', hashPassword);
 
   User.findOne({
-    where: { email: decoded_data.data }, // TODO: string 설정을 제외하는 방법?
+    where: { email: decoded_data.data },
   }).then((data: any) => {
-    // console.log('data: ', data);
     data.dataValues.password !== hashPassword
-      ? // NOTE: User.update({password: '새로운 유저PW'}, {where: {userID: '유저ID'}})
-        User.update(
-          { password: hashPassword }, // 새로운 pass를 넣는다. // pk 는 업데이트 불가능
-          { where: { email: decoded_data.data } } // 유저 email
+      ? User.update(
+          { password: hashPassword },
+          { where: { email: decoded_data.data } }
         )
           .then(() => {
             res.status(200).send('비밀번호 변경에 성공하셨습니다.');
@@ -163,19 +166,17 @@ router.post('/changepassword', (req, res) => {
 });
 
 // * POST /users/checkemail, 이메일 중복 체크
-// client 측에서 email 확인 버튼을 눌렀을 때, server 측에서 유효성 검사 후 send!
 router.post('/checkemail', (req, res) => {
   const { email } = req.body;
 
   User.findOne({
     where: { email },
-  })
-    // TODO: any 말고 사용하는 방법? ts 찾아보기!
-    .then((data: any) => {
-      data
-        ? res.status(409).send('존재하는 이메일 입니다.')
-        : res.status(200).send('사용가능한 이메일 입니다.');
-    });
+  }).then((data: any) => {
+    console.log('data: ', data);
+    data
+      ? res.status(409).send('존재하는 이메일 입니다.')
+      : res.status(200).send('사용가능한 이메일 입니다.');
+  });
 });
 
 // * POST /users/checknickname, 닉네임 중복 체크
@@ -189,64 +190,71 @@ router.post('/checknickname', (req, res) => {
       ? res.status(409).send('존재하는 닉네임 입니다.')
       : res.status(200).send('사용가능한 닉네임 입니다.');
   });
-  // catch
 });
 
 // * POST /users/signup
+// user 가 회원가입 했을 때, 회원정보를 db에 저장하도록 구현.
 router.post('/signup', (req, res) => {
-  // user 가 회원가입 했을 때, 회원정보를 db에 저장하도록 구현.
   const { email, nickname, password, passwordForCheck } = req.body;
-  if (password === passwordForCheck) {
+  if (
+    password === passwordForCheck &&
+    password !== '' &&
+    passwordForCheck !== ''
+  ) {
+    const saltedPassword = password + process.env.SALT!;
     const hashPassword = crypto
       .createHmac('sha512', process.env.CRYPTO!)
-      .update(password + process.env.SALT)
+      .update(saltedPassword)
       .digest('hex');
-
+    console.log('회원가입 할 때 ::', hashPassword);
     User.findOne({
-       where: { email },
-     }).then((data: any) => {
-       data
-         ? res.status(409).send('Already exist user')
-         : User.create({
-             email,
-             nickname,
-             password,
-           }).then(() => {
-            User.update(
-              { password: password }, 
-              { where: { email } } 
-            );
-            res.status(200).send('성공적으로 회원가입 하셨습니다.');
-        })
+      where: { email },
+    })
+      .then((data: any) => {
+        data
+          ? res.status(409).send('Already exist user')
+          : User.create({
+              email,
+              nickname,
+              password,
+            }).then(() => {
+              User.update({ password: hashPassword }, { where: { email } });
+              res.status(200).send('성공적으로 회원가입 하셨습니다.');
+            });
       })
-      .catch(()=>{
+      .catch(() => {
         res.status(404).send('비밀번호 입력을 동일하게 해주세요!');
-      })
-    }
+      });
+  } else {
+    res
+      .status(409)
+      .send('비밀번호를 입력해 주시거나, 동일한 비밀번호를 입력해 주세요, ');
+  }
 });
-
-
 
 // * POST /users/login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
+  const saltedPassword = password + process.env.SALT!;
   const hashPassword = crypto
-    .createHmac('sha512', 'crypto_secret_key')
-    .update(password + process.env.SALT) 
+    .createHmac('sha512', process.env.CRYPTO!)
+    .update(saltedPassword)
     .digest('hex');
   const sess: any = req.session;
 
   User.findOne({
     where: {
       email: email,
-      password: password  
+      password: hashPassword,
     },
   })
     .then((data: any) => {
       if (data) {
         sess.user_id = data.id
-        User.update({ password: password }, { where: { email } });  
-        let token = jwt.sign({ data: email, userId: data.id }, 'jwt');
+        let token = jwt.sign(
+          { data: email, userId: data.id },
+          process.env.JWT!
+        );
         res.status(200).json({
           userData: {
             id: data.id,
@@ -256,9 +264,9 @@ router.post('/login', (req, res) => {
           token: token,
           profile: data.profile,
         });
-        } else {
-          return res.status(404).send('invalid user');      
-        }
+      } else {
+        return res.status(404).send('invalid user');
+      }
     })
     .catch((err: any) => {
       res.status(404).send(err);

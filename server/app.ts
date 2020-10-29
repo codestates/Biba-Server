@@ -11,6 +11,7 @@ import User from './models/user';
 //google.OAuth2Strategy;
 
 //middleware
+import * as jwt from 'jsonwebtoken';
 import * as morgan from 'morgan';
 import * as cors from 'cors';
 import * as dotenv from 'dotenv';
@@ -27,6 +28,7 @@ import searchWord from './routes/search';
 import commentRouter from './routes/comment';
 import bookMarkRouter from './routes/bookmark';
 import reportRouter from './routes/report';
+import categoryRouter from './routes/category';
 
 const app = express();
 const port = 4000;
@@ -129,9 +131,9 @@ app.get('/auth/google/callback',
 app.use('/users', usersRouter);
 //app.use('/socials/google', googleRouter);
 
-
 // Beer Router
 app.use('/beer', beerRouter);
+app.use('/category', categoryRouter);
 app.use('/tag', tagRouter);
 app.use('/style', styleRouter);
 app.use('/search', searchWord);
@@ -139,12 +141,46 @@ app.use('/comment', commentRouter);
 app.use('/bookmark', bookMarkRouter);
 app.use('/report', reportRouter);
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/auth', (req: Request, res: Response) => {
   let sess: any = req.session
   console.log(sess.user_id)
+  if (sess.user_id) {
+    User.findOne({
+      where: {
+        id: sess.user_id
+      },
+    })
+      .then((data: any) => {
+        if (data) {
+          let token = jwt.sign(
+            { data: data.email, userId: data.id },
+            process.env.JWT!
+          );
+          res.status(200).json({
+            userData: {
+              id: data.id,
+              email: data.email,
+              nickname: data.nickname,
+            },
+            token: token,
+            profile: data.profile,
+          });
+        } else {
+          return res.status(404).send('');
+        }
+      })
+      .catch((err: any) => {
+        res.status(404).send(err);
+      });
+  } else if(sess.user_id === undefined) {
+    res.status(400).send('인증 정보가 없습니다.')
+  }
   
-  res.status(200).send('Success!');
 });
+
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).send('성공!')
+})
 
 app.get('/health', (req, res) => {
   console.log('Time:', Date());
