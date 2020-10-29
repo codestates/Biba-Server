@@ -28,10 +28,12 @@ const today = () => {
   );
 };
 
+// location 타입에러 해결을 위한 file 설정
 interface MulterRequest extends Request {
   file: any;
 }
 
+// aws s3 객체 생성 및 multer upload setting
 const s3 = new aws.S3();
 const upload = multer({
   limits: {
@@ -44,12 +46,12 @@ const upload = multer({
     acl: 'public-read',
     key: (req, file, cb) => {
       cb(null, today() + '.' + file.originalname.split('.').pop());
-    }, // nickname 가져오려면 nickname 을 body 로 받기
-  }),  // nickname 을 받는 방법
+    }, 
+  }),  
 });
 
 // * POST /users/profile 
-// 파일선택에서 선택한 사진을 업로드 클릭시 s3에 저장한다.
+// 선택한 사진(한개)을 업로드 시 s3에 저장한다.
 router.post('/profile', upload.single('image'), async (req, res) => {
   const image = (req as MulterRequest).file;
   const location = image.location;
@@ -58,13 +60,13 @@ router.post('/profile', upload.single('image'), async (req, res) => {
     return res.status(400).send('실패');
   } else {
     User.findOne({
-      where: { nickname  },
+      where: { nickname },
     }).then(() => {
       User.update(
         { profile: location },
         { where: { nickname }}
       );
-      res.status(200).json({profile: location});
+      res.status(200).json({ profile: location });
     })
     .catch(()=>{
       res.status(400).send("DB에 저장 실패!")
@@ -73,12 +75,12 @@ router.post('/profile', upload.single('image'), async (req, res) => {
 })
 
 // * POST /users/profile/delete
+// DB 의 profile 삭제 && s3 img 삭제
 router.post('/profile/delete', function (req, res) {
   const {
     body: { nickname }
   } = req
   
-  // DB에서 비밀번호 삭제 && s3 삭제
   User.findOne({
     where: { nickname }
   })
@@ -101,7 +103,7 @@ router.post('/profile/delete', function (req, res) {
   })
 });
 
-// * POST /users/changeNickname
+// * POST /users/changeNickname , 닉네임 변경
 router.post('/changenickname', (req, res) => {
   let { nickname, token } = req.body;
   // let token: any = req.headers.token;
@@ -128,7 +130,7 @@ router.post('/changenickname', (req, res) => {
   });
 });
 
-// * POST /users/changePassword
+// * POST /users/changePassword , 비밀번호 변경
 router.post('/changepassword', (req, res) => {
   let { currentPassword, newPassword, token } = req.body;
   // let token: any = req.headers.token;
@@ -137,8 +139,7 @@ router.post('/changepassword', (req, res) => {
   // const decoded_data: string | object = jwt.verify(token, 'secret_key');
   // console.log('decoded_data: ', decoded_data);
 
-  // crypto 적용
-  // 단방향이며, 비번 변경시 비밀키는 동일하므로 항상 요청시 동일한 암호화된 비밀번호를 DB에서 확인할 수 있다.
+  // crypto: 단방향이며, 비번 변경시 비밀키는 동일하므로 항상 요청시 동일한 암호화된 비밀번호를 DB에서 확인할 수 있다.
 
   const saltedPassword = newPassword + process.env.SALT!;
   const hashPassword = crypto
@@ -148,10 +149,10 @@ router.post('/changepassword', (req, res) => {
   console.log('비밀번호 변경 할 때 ::', hashPassword);
 
   User.findOne({
-    where: { email: decoded_data.data }, // TODO: string 설정을 제외하는 방법?
+    where: { email: decoded_data.data }, 
   }).then((data: any) => {
     data.dataValues.password !== hashPassword
-      ? // NOTE: User.update({password: '새로운 유저PW'}, {where: {userID: '유저ID'}})
+      ? 
         User.update(
           { password: hashPassword }, 
           { where: { email: decoded_data.data } } 
@@ -173,7 +174,6 @@ router.post('/checkemail', (req, res) => {
   User.findOne({
     where: { email },
   })
-    // TODO: any 말고 사용하는 방법? ts 찾아보기!
     .then((data: any) => {
       console.log('data: ', data);
       data
@@ -196,8 +196,8 @@ router.post('/checknickname', (req, res) => {
 });
 
 // * POST /users/signup
+// user 가 회원가입 했을 때, 회원정보를 db에 저장하도록 구현.
 router.post('/signup', (req, res) => {
-  // user 가 회원가입 했을 때, 회원정보를 db에 저장하도록 구현.
   const { email, nickname, password, passwordForCheck } = req.body;
   if (
     password === passwordForCheck &&
