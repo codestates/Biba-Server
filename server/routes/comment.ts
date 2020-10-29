@@ -98,8 +98,9 @@ router.post('/mylist', async (req, res) => {
         return res.status(200).json(sendMyList);
       }
       return res.send('코멘트를 찾을 수 없습니다.');
+    } else {
+      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('회원 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }
@@ -138,8 +139,9 @@ router.post('/create', async (req, res) => {
         return res.status(201).send('코멘트 생성');
       }
       return res.status(400).send('잘못된 요청입니다.');
+    } else {
+      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('회원 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }
@@ -170,8 +172,9 @@ router.post('/update', async (req, res) => {
         return res.status(400).send('잘못된 요청입니다.');
       }
       return res.status(403).send('삭제 권한이 없습니다.');
+    } else {
+      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('회원 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }
@@ -200,8 +203,9 @@ router.post('/delete', async (req, res) => {
         return res.status(400).send('잘못 된 요청입니다.');
       }
       return res.status(403).send('삭제 권한이 없습니다.');
+    } else {
+      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('회원 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }
