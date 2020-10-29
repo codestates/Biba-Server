@@ -162,7 +162,10 @@ router.post('/update', async (req, res) => {
             comment,
           },
           {
-            where: { user_id },
+            where: {
+              user_id,
+              beer_id,
+            },
           }
         ).catch(() => res.sendStatus(500));
         if (updateComment) {

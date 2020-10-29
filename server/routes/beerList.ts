@@ -95,7 +95,11 @@ router.post('/:id', async (req, res) => {
       user_rate = commentCheck.rate;
       // console.log('코멘트 확인', commentCheck.comment === '');
       user_input = commentCheck.comment;
-      user_review = true;
+      if (user_input === '') {
+        user_review = false;
+      } else {
+        user_review = true;
+      }
     }
     // 평균 별점
     AverageRate(id, rate);
@@ -163,11 +167,9 @@ router.post('/:id', async (req, res) => {
 
     const tags = findTag.reduce((acc: string[], val) => {
       let tag = val['getTag.tag_name'];
-      console.log('test', tag);
       acc.push(tag);
       return acc;
     }, []);
-    console.log(tags);
 
     const beerGraph = await Graph.findOne({
       where: {
@@ -176,7 +178,6 @@ router.post('/:id', async (req, res) => {
       raw: true,
       attributes: ['sparkling', 'sweet', 'accessibility', 'body', 'bitter'],
     });
-    console.log(beerInfo);
 
     if (beerInfo !== null && beerGraph) {
       const sendbeerInfo = Object.assign(
