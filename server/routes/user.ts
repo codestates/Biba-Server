@@ -11,6 +11,7 @@ import * as multerS3 from 'multer-s3';
 import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
+import { AnyLengthString } from 'aws-sdk/clients/comprehend';
 dotenv.config();
 
 //multer,aws-sdk,s3 연동
@@ -243,6 +244,7 @@ router.post('/login', (req, res) => {
     .createHmac('sha512', process.env.CRYPTO!)
     .update(saltedPassword)
     .digest('hex');
+  const sess: any = req.session;
 
   User.findOne({
     where: {
@@ -252,6 +254,7 @@ router.post('/login', (req, res) => {
   })
     .then((data: any) => {
       if (data) {
+        sess.user_id = data.id
         let token = jwt.sign(
           { data: email, userId: data.id },
           process.env.JWT!
