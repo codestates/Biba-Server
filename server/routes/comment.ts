@@ -135,7 +135,7 @@ router.post('/create', async (req, res) => {
         beer_id,
       }).catch(() => res.sendStatus(500));
       if (createComment) {
-        AverageRate(beer_id, rate);
+        AverageRate(beer_id);
         return res.status(201).send('코멘트 생성');
       }
       return res.status(400).send('잘못된 요청입니다.');
@@ -162,11 +162,14 @@ router.post('/update', async (req, res) => {
             comment,
           },
           {
-            where: { user_id },
+            where: {
+              user_id,
+              beer_id,
+            },
           }
         ).catch(() => res.sendStatus(500));
         if (updateComment) {
-          AverageRate(beer_id, rate);
+          AverageRate(beer_id);
           return res.status(201).send('수정 완료');
         }
         return res.status(400).send('잘못된 요청입니다.');
