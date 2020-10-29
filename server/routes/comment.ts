@@ -69,7 +69,7 @@ router.post('/mylist', async (req, res) => {
           {
             model: Beer,
             as: 'Beer',
-            attributes: ['beer_name'],
+            attributes: ['beer_name', 'beer_img'],
           },
           {
             model: User,
@@ -83,14 +83,14 @@ router.post('/mylist', async (req, res) => {
         Object.assign(
           {},
           {
-            id: data.id,
             comment: data.comment,
             rate: data.rate,
-            beer_id: data.beer_id,
+            id: data.beer_id,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
             nickname: data['User.nickname'],
             beer_name: data['Beer.beer_name'],
+            beer_img: data['Beer.beer_img'],
           }
         )
       );

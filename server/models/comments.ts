@@ -14,6 +14,7 @@ class Comment extends Model {
   public ['Beer.beer_name']: string;
   public ['User.id']: number;
   public ['User.profile']: string;
+  public ['Beer.beer_img']: string;
 }
 
 Comment.init(
