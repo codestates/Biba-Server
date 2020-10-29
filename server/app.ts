@@ -41,10 +41,12 @@ app.use(
     secret: process.env.SESSION_SECRET || '',
     resave: false,
     saveUninitialized: true,
-    // cookie: {
-    //   httpOnly: true,
-    //   secure: true
-    // }
+    rolling: true,
+    cookie: {
+      httpOnly: true,
+      maxAge: 60000 * 30, // 30분
+      secure: true, //s 만 받으려면
+    },
   })
 );
 app.use(passport.initialize());

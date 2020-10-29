@@ -53,7 +53,7 @@ router.post('/', (req, res) => {
 // return res.status(400).send('즐겨찾기 추가 실패');
 
 // 즐겨찾기 리스트
-router.post('/', async (req, res) => {
+router.post('/list', async (req, res) => {
   const { token } = req.body;
   try {
     if (token) {
@@ -78,7 +78,7 @@ router.post('/', async (req, res) => {
         Object.assign(
           {},
           {
-            beer_id: data['getBeer.id'],
+            id: data['getBeer.id'],
             beer_name: data['getBeer.beer_name'],
             beer_img: data['getBeer.beer_img'],
             rate: data['getBeer.rate'],

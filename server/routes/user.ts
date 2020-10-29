@@ -31,8 +31,8 @@ const today = () => {
 
 // location 타입에러 해결을 위한 file 설정
 interface MulterRequest extends Request {
-  file: any,
-  files: any
+  file: any;
+  files: any;
 }
 
 // aws s3 객체 생성 및 multer upload setting
@@ -53,13 +53,13 @@ const upload = multer({
 });
 
 // * POST /users/profile
-// 선택한 사진을 s3에 업로드하며, aws rds 에 profile 에 location 을 저장한다.  
+// 선택한 사진을 s3에 업로드하며, aws rds 에 profile 에 location 을 저장한다.
 router.post('/profile', upload.array('image'), (req, res) => {
   try {
     const { nickname } = req.body;
     const image = (req as MulterRequest).files;
     const lastImage = image.slice(image.length - 1)[0].location;
-    
+
     User.findOne({
       where: { nickname },
     })
@@ -70,10 +70,9 @@ router.post('/profile', upload.array('image'), (req, res) => {
       .catch(() => {
         res.status(500).send('DB 서버에 저장 실패!');
       });
-  } catch(err) {
+  } catch (err) {
     res.status(400).send('이미지가 없습니다.');
   }
-  
 });
 
 // * POST /users/profile/delete
@@ -254,7 +253,7 @@ router.post('/login', (req, res) => {
   })
     .then((data: any) => {
       if (data) {
-        sess.user_id = data.id
+        sess.user_id = data.id;
         let token = jwt.sign(
           { data: email, userId: data.id },
           process.env.JWT!
