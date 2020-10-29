@@ -53,7 +53,7 @@ router.post('/', (req, res) => {
 // return res.status(400).send('즐겨찾기 추가 실패');
 
 // 즐겨찾기 리스트
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
   const { token } = req.body;
   try {
     if (token) {
