@@ -30,7 +30,8 @@ const today = () => {
 
 // location 타입에러 해결을 위한 file 설정
 interface MulterRequest extends Request {
-  file: any;
+  file: any,
+  files: any
 }
 
 // aws s3 객체 생성 및 multer upload setting
@@ -51,25 +52,27 @@ const upload = multer({
 });
 
 // * POST /users/profile
-// 선택한 사진(한개)을 업로드 시 s3에 저장한다.
-router.post('/profile', upload.single('image'), async (req, res) => {
-  const image = (req as MulterRequest).file;
-  const location = image.location;
-  const { nickname } = req.body;
-  if (image === undefined) {
-    return res.status(400).send('실패');
-  } else {
+// 선택한 사진을 s3에 업로드하며, aws rds 에 profile 에 location 을 저장한다.  
+router.post('/profile', upload.array('image'), (req, res) => {
+  try {
+    const { nickname } = req.body;
+    const image = (req as MulterRequest).files;
+    const lastImage = image.slice(image.length - 1)[0].location;
+    
     User.findOne({
       where: { nickname },
     })
       .then(() => {
-        User.update({ profile: location }, { where: { nickname } });
-        res.status(200).json({ profile: location });
+        User.update({ profile: lastImage }, { where: { nickname } });
+        res.status(200).json({ profile: lastImage });
       })
       .catch(() => {
-        res.status(400).send('DB에 저장 실패!');
+        res.status(500).send('DB 서버에 저장 실패!');
       });
+  } catch(err) {
+    res.status(400).send('이미지가 없습니다.');
   }
+  
 });
 
 // * POST /users/profile/delete
@@ -84,6 +87,7 @@ router.post('/profile/delete', function (req, res) {
   })
     .then((data) => {
       if (data) {
+        console.log('data: ', data);
         let userProfileKey = data.profile.split('/')[3];
         s3.deleteObject(
           {
@@ -93,11 +97,11 @@ router.post('/profile/delete', function (req, res) {
           function (err, data) {}
         );
         User.update({ profile: '' }, { where: { nickname } });
-        return res.status(200).send('성공');
+        return res.status(200).send('DB profile 삭제 성공');
       }
     })
     .catch(() => {
-      res.status(400).send('삭제 실패!');
+      res.status(500).send('삭제 실패!');
     });
 });
 
@@ -248,7 +252,6 @@ router.post('/login', (req, res) => {
   })
     .then((data: any) => {
       if (data) {
-        User.update({ password: hashPassword }, { where: { email } });
         let token = jwt.sign(
           { data: email, userId: data.id },
           process.env.JWT!
@@ -267,7 +270,7 @@ router.post('/login', (req, res) => {
       }
     })
     .catch((err: any) => {
-      res.status(404).send(err);
+      res.status(409).send(err);
     });
 });
 
