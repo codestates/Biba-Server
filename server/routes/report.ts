@@ -25,8 +25,9 @@ router.post('/recommend', async (req, res) => {
         return res.status(201).send('요청 완료');
       }
       return res.status(400).send('잘못된 요청입니다.');
+    } else {
+      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('회원 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }
@@ -50,8 +51,9 @@ router.post('/request', async (req, res) => {
         return res.status(201).send('요청 완료');
       }
       return res.status(400).send('잘못된 요청입니다.');
+    } else {
+      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }
-    return res.status(401).send('회원 정보를 찾을 수 없습니다.');
   } catch (e) {
     return res.sendStatus(500);
   }

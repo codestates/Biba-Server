@@ -16,7 +16,6 @@ router.post('/', (req, res) => {
     if (token) {
       const decoded: any = jwt.verify(token, secret);
       const user_id = decoded.userId;
-      console.log('확인!!!!', decoded);
       BookMark.findOrCreate({
         where: {
           user_id,
