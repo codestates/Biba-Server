@@ -17,14 +17,7 @@ const AverageRate = async (id: string) => {
     }
     avg = Math.round(rate / allRate.length);
   }
-  await Beer.update(
-    {
-      rate: avg,
-    },
-    {
-      where: { id: id },
-    }
-  );
+  await Beer.update({ rate: avg }, { where: { id: id } });
 };
 
 export default AverageRate;
