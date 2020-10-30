@@ -3,7 +3,6 @@ import Comment from '../models/comments';
 import User from '../models/user';
 import * as jwt from 'jsonwebtoken';
 import Beer from '../models/beers';
-import { IncomingHttpHeaders } from 'http';
 import AverageRate from '../modules/rate';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -53,7 +52,7 @@ router.get('/:beer_id', async (req, res) => {
   }
 });
 
-// 내가 작성한 리뷰
+// 내가 작성한 리뷰 (업데이트순)
 router.post('/mylist', async (req, res) => {
   try {
     const { token } = req.body;
@@ -64,6 +63,7 @@ router.post('/mylist', async (req, res) => {
         where: {
           user_id,
         },
+        order: [['updatedAt', 'DESC']],
         raw: true,
         include: [
           {
@@ -106,39 +106,53 @@ router.post('/mylist', async (req, res) => {
   }
 });
 
-interface tokenType extends IncomingHttpHeaders {
-  token?: string;
-}
-
-type decodedType = {
-  data: string;
-  userId: number;
-  iat: number;
-};
-
-interface Idecoded {
-  decoded: decodedType | string;
-}
-
 // 코멘트 생성
-router.post('/create', async (req, res) => {
+router.post('/update', (req, res) => {
   try {
     const { comment, rate, beer_id, token } = req.body;
     if (token) {
       const decoded: any = jwt.verify(token, secret);
       console.log('decoded', decoded);
       const user_id = decoded.userId;
-      const createComment = await Comment.create({
-        comment,
-        rate,
-        user_id,
-        beer_id,
-      }).catch(() => res.sendStatus(500));
-      if (createComment) {
-        AverageRate(beer_id);
-        return res.status(201).send('코멘트 생성');
-      }
-      return res.status(400).send('잘못된 요청입니다.');
+      // 유저가 코멘트를 남겼는지 확인
+      Comment.findOrCreate({
+        where: {
+          user_id,
+          beer_id,
+        },
+      }).then(([result, created]) => {
+        if (created) {
+          Comment.update(
+            {
+              rate,
+              comment,
+            },
+            {
+              where: {
+                user_id,
+                beer_id,
+              },
+            }
+          ).then(() => AverageRate(beer_id).catch(() => res.sendStatus(500)));
+          return res.status(201).send('등록 완료');
+        } else {
+          Comment.update(
+            {
+              rate,
+              comment,
+            },
+            {
+              where: {
+                user_id,
+                beer_id,
+              },
+            }
+          )
+            .then((data) => AverageRate(beer_id))
+            .catch(() => res.sendStatus(500));
+          return res.status(201).send('등록 완료');
+        }
+      });
     } else {
       return res.status(401).send('회원 정보를 찾을 수 없습니다.');
     }

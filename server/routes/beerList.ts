@@ -10,6 +10,7 @@ import AverageRate from '../modules/rate';
 import Beer_tag from '../models/beer_tag';
 import Tag from '../models/tags';
 import Graph from '../models/graph';
+import viewCount from '../modules/viewCount';
 
 const router = express.Router();
 
@@ -93,7 +94,6 @@ router.post('/:id', async (req, res) => {
     if (commentCheck !== null) {
       user_star = true;
       user_rate = commentCheck.rate;
-      // console.log('코멘트 확인', commentCheck.comment === '');
       user_input = commentCheck.comment;
       if (user_input === '') {
         user_review = false;
@@ -103,6 +103,7 @@ router.post('/:id', async (req, res) => {
     }
     // 평균 별점
     AverageRate(id);
+    viewCount(id, user_id);
 
     const beerInfo = await Beer.findOne({
       attributes: [

@@ -1,7 +1,6 @@
 import * as express from 'express';
 import Beer from '../models/beers';
 import BookMark from '../models/bookmark';
-import Comment from '../models/comments';
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -61,7 +60,8 @@ router.post('/list', async (req, res) => {
       const user_id = decoded.userId;
       const userBookMarkList = await BookMark.findAll({
         raw: true,
-        attributes: ['id'],
+        attributes: [], // 포함된 모델에서의 정렬을 하고 싶을 때
+        order: [[{ model: Beer, as: 'getBeer' }, 'beer_name', 'ASC']],
         where: {
           user_id,
         },
@@ -73,7 +73,6 @@ router.post('/list', async (req, res) => {
           },
         ],
       });
-
       const sendUserBookMarkList = userBookMarkList.map((data) =>
         Object.assign(
           {},
