@@ -2,10 +2,11 @@ import * as express from 'express';
 import * as Sequelize from 'sequelize';
 import Beer from '../models/beers';
 import ViewCount from '../models/viewCount';
+import Beer_tag from '../models/beer_tag';
 
 const router = express.Router();
 
-// 한 번도 방문한적 없는
+// 한 번도 방문한적 없는 (평점순으로)
 router.post('/never-visit', async (req, res) => {
   try {
     const { user_id } = req.body;
@@ -27,7 +28,7 @@ router.post('/never-visit', async (req, res) => {
       const BeerList = await Beer.findAll({
         limit: 10,
         raw: true,
-        order: Sequelize.literal('rand()'),
+        order: [['rate', 'DESC']],
         attributes: ['id', 'beer_name', 'beer_img', 'rate'],
         where: {
           id: {
@@ -296,5 +297,78 @@ router.get('/popular', async (req, res) => {
     return res.sendStatus(500);
   }
 });
+
+// router.post('/test-visit', async (req, res) => {
+//   try {
+//     const { user_id } = req.body;
+//     if (user_id) {
+//       const manyVisitList = await ViewCount.findAll({
+//         raw: true,
+//         limit: 10,
+//         attributes: ['beer_id'],
+//         order: [['count', 'DESC']],
+//         where: {
+//           user_id,
+//         },
+//       });
+
+//       // 맥주 아이디 배열
+//       const arrList = manyVisitList.reduce((acc: number[], val) => {
+//         let view = val['beer_id'];
+//         acc.push(view);
+//         return acc;
+//       }, []);
+//       console.log(arrList);
+//       const testList = await Beer_tag.findAll({
+//         raw: true,
+//         attributes: [],
+//         where: {
+//           id: {
+//             [Sequelize.Op.in]: arrList,
+//           },
+//         },
+//         include: [{
+
+//         }]
+//       })
+
+//       const BeerList = await Beer.findAll({
+//         raw: true,
+//         attributes: ['id', 'beer_name', 'beer_img', 'rate'],
+//         where: {
+//           id: {
+//             [Sequelize.Op.in]: arrList,
+//           },
+//         },
+//         include: [
+//           {
+//             model: Beer_tag,
+//             as: 'getBeer_tag',
+//             attributes: [],
+//           },
+//         ],
+//       });
+//       console.log(BeerList);
+//       const sendBeerList = BeerList.map((data) =>
+//         Object.assign(
+//           {},
+//           {
+//             id: data.id,
+//             beer_name: data.beer_name,
+//             beer_img: data.beer_img,
+//             rate: data.rate,
+//           }
+//         )
+//       );
+//       if (sendBeerList) {
+//         return res.status(200).json(sendBeerList);
+//       }
+//     } else {
+//       return res.status(401).send('유저 정보를 찾을 수 없습니다.');
+//     }
+//   } catch (e) {
+//     return res.sendStatus(500);
+//   }
+// });
 
 export default router;
