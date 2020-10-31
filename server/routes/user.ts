@@ -258,8 +258,6 @@ router.post('/login', (req, res) => {
           process.env.JWT!
         );
         sess.user_id = token;
-        console.log('::::::::sess.user_id:::::::', sess.user_id);
-        res.setHeader('set-cookie', token);
         res.status(200).json({
           userData: {
             id: data.id,

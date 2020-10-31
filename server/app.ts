@@ -40,6 +40,7 @@ const secret = process.env.JWT!;
 //use middleware
 app.use(
   session({
+    proxy: true,
     secret: process.env.SESSION_SECRET || '',
     resave: false,
     saveUninitialized: true,
@@ -158,39 +159,36 @@ app.use('/report', reportRouter);
 
 app.get('/auth', (req: Request, res: Response) => {
   let sess: any = req.session;
-  console.log('::::::sess::::::', sess);
-  console.log('::::::req.headers:::::', req.headers);
-  console.log(':::::::req.seesion.cookie:::::', req.session?.cookie);
-
-  // if (sess.user_id) {
-  //   const decoded: any = jwt.verify(token, secret);
-  //   const user_id = decoded.userId;
-  //   User.findOne({
-  //     where: {
-  //       id: user_id,
-  //     },
-  //   })
-  //     .then((data: any) => {
-  //       if (data) {
-  //         res.status(200).json({
-  //           userData: {
-  //             id: data.id,
-  //             email: data.email,
-  //             nickname: data.nickname,
-  //           },
-  //           token: token,
-  //           profile: data.profile,
-  //         });
-  //       } else {
-  //         return res.status(404).send('');
-  //       }
-  //     })
-  //     .catch((err: any) => {
-  //       res.status(500).send(err);
-  //     });
-  // } else {
-  //   res.status(404).send('인증 정보가 없습니다.');
-  // }
+  console.log('::::server Auth::::::', sess.user_id);
+  if (sess.user_id) {
+    const decoded: any = jwt.verify(sess.user_id, secret);
+    const user_id = decoded.userId;
+    User.findOne({
+      where: {
+        id: user_id,
+      },
+    })
+      .then((data: any) => {
+        if (data) {
+          res.status(200).json({
+            userData: {
+              id: data.id,
+              email: data.email,
+              nickname: data.nickname,
+            },
+            token: sess.user_id,
+            profile: data.profile,
+          });
+        } else {
+          return res.status(404).send('');
+        }
+      })
+      .catch((err: any) => {
+        res.status(500).send(err);
+      });
+  } else {
+    res.status(404).send('인증 정보가 없습니다.');
+  }
 });
 
 app.get('/', (req: Request, res: Response) => {
