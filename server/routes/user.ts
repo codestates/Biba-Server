@@ -276,7 +276,7 @@ router.post('/login', (req, res) => {
 });
 
 // * POST /users/logout 
-router.post('/logout', (req, res) => {
+router.get('/logout', (req, res) => {
   const sess = req.session;
   console.log('sess111: ', sess);
   
