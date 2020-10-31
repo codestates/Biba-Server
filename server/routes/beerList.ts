@@ -14,22 +14,18 @@ import viewCount from '../modules/viewCount';
 
 const router = express.Router();
 
-// 모든 맥주 리스트 (랜덤하게)
+// 매인 맥주 리스트 (포스터 선별해서 보여주기)
 router.get('/list', async (req, res) => {
-  //   const where = {};
-  //   if (parseInt(req.query.lastId, 10)) {
-  //     where = {
-  //       id: {
-  //         [Sequelize.Op.lt]: parseInt(req.query.lastId, 10),
-  //       }, 무한 스크롤 어떤식으로?
-  //     };
-  //   }
   try {
     const allBeerList = await Beer.findAll({
-      order: Sequelize.literal('rand()'),
       limit: 10,
       raw: true,
-      attributes: ['id', 'beer_name', 'beer_img', 'rate'],
+      where: {
+        id: {
+          [Sequelize.Op.in]: [1],
+        },
+      },
+      attributes: ['id', 'beer_name', 'poster', 'rate'],
     });
 
     const sendAllBeerList = allBeerList.map((data) =>
@@ -38,7 +34,7 @@ router.get('/list', async (req, res) => {
         {
           id: data.id,
           beer_name: data.beer_name,
-          beer_img: data.beer_img,
+          beer_img: data.poster,
           rate: data.rate,
         }
       )
