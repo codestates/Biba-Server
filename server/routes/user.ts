@@ -29,9 +29,8 @@ const today = () => {
   );
 };
 
-// location 타입에러 해결을 위한 file 설정
+// location 타입에러 해결을 위한 files 설정
 interface MulterRequest extends Request {
-  file: any;
   files: any;
 }
 
@@ -243,7 +242,7 @@ router.post('/login', (req, res) => {
     .createHmac('sha512', process.env.CRYPTO!)
     .update(saltedPassword)
     .digest('hex');
-  const sess: any = req.session;
+  const sess = req.session;
 
   User.findOne({
     where: {
@@ -251,8 +250,8 @@ router.post('/login', (req, res) => {
       password: hashPassword,
     },
   })
-    .then((data: any) => {
-      if (data) {
+    .then((data) => {
+      if (data && sess) { // *
         let token = jwt.sign(
           { data: email, userId: data.id },
           process.env.JWT!
@@ -271,9 +270,25 @@ router.post('/login', (req, res) => {
         return res.status(404).send('invalid user');
       }
     })
-    .catch((err: any) => {
+    .catch((err) => {
       res.status(409).send(err);
     });
 });
+
+// * POST /users/logout 
+router.post('/logout', (req, res) => {
+  const sess = req.session;
+  console.log('sess111: ', sess);
+  
+
+  if(sess) {                   
+    console.log('sess222: ', sess);
+    sess.destroy(() => {
+      res.status(200).send('session 삭제 성공')
+    })
+  } else {
+    res.status(400).send('session 삭제 실패')
+  }
+})
 
 export = router;
