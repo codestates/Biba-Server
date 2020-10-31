@@ -243,6 +243,7 @@ router.post('/login', (req, res) => {
     .createHmac('sha512', process.env.CRYPTO!)
     .update(saltedPassword)
     .digest('hex');
+  const sess: any = req.session;
 
   User.findOne({
     where: {
@@ -256,6 +257,9 @@ router.post('/login', (req, res) => {
           { data: email, userId: data.id },
           process.env.JWT!
         );
+        sess.user_id = token;
+        console.log('::::::::sess.user_id:::::::', sess.user_id);
+        res.setHeader('set-cookie', token);
         res.status(200).json({
           userData: {
             id: data.id,

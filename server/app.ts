@@ -45,6 +45,7 @@ app.use(
     saveUninitialized: true,
     rolling: true,
     cookie: {
+      path: '/',
       sameSite: 'none',
       httpOnly: true,
       maxAge: 60000 * 30, // 30분
@@ -156,38 +157,40 @@ app.use('/bookmark', bookMarkRouter);
 app.use('/report', reportRouter);
 
 app.get('/auth', (req: Request, res: Response) => {
-  const { token } = req.body;
+  let sess: any = req.session;
+  console.log('::::::sess::::::', sess);
+  console.log('::::::req.headers:::::', req.headers);
+  console.log(':::::::req.seesion.cookie:::::', req.session?.cookie);
 
-  console.log(token);
-  if (token) {
-    const decoded: any = jwt.verify(token, secret);
-    const user_id = decoded.userId;
-    User.findOne({
-      where: {
-        id: user_id,
-      },
-    })
-      .then((data: any) => {
-        if (data) {
-          res.status(200).json({
-            userData: {
-              id: data.id,
-              email: data.email,
-              nickname: data.nickname,
-            },
-            token: token,
-            profile: data.profile,
-          });
-        } else {
-          return res.status(404).send('');
-        }
-      })
-      .catch((err: any) => {
-        res.status(500).send(err);
-      });
-  } else {
-    res.status(404).send('인증 정보가 없습니다.');
-  }
+  // if (sess.user_id) {
+  //   const decoded: any = jwt.verify(token, secret);
+  //   const user_id = decoded.userId;
+  //   User.findOne({
+  //     where: {
+  //       id: user_id,
+  //     },
+  //   })
+  //     .then((data: any) => {
+  //       if (data) {
+  //         res.status(200).json({
+  //           userData: {
+  //             id: data.id,
+  //             email: data.email,
+  //             nickname: data.nickname,
+  //           },
+  //           token: token,
+  //           profile: data.profile,
+  //         });
+  //       } else {
+  //         return res.status(404).send('');
+  //       }
+  //     })
+  //     .catch((err: any) => {
+  //       res.status(500).send(err);
+  //     });
+  // } else {
+  //   res.status(404).send('인증 정보가 없습니다.');
+  // }
 });
 
 app.get('/', (req: Request, res: Response) => {
