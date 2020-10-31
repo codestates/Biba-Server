@@ -7,6 +7,10 @@ class Tag extends Model {
   public tag_name!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+  public ['getBeer_tag.getBeer.id']: string;
+  public ['getBeer_tag.getBeer.beer_name']: string;
+  public ['getBeer_tag.getBeer.beer_img']: string;
+  public ['getBeer_tag.getBeer.rate']: string;
 }
 
 Tag.init(
