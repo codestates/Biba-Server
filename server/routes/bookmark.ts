@@ -51,8 +51,8 @@ router.post('/', (req, res) => {
 // }
 // return res.status(400).send('즐겨찾기 추가 실패');
 
-// 즐겨찾기 리스트
-router.post('/list', async (req, res) => {
+// 즐겨찾기 추가한 리스트 (가나다 정렬)
+router.post('/abc', async (req, res) => {
   const { token } = req.body;
   try {
     if (token) {
@@ -73,6 +73,53 @@ router.post('/list', async (req, res) => {
           },
         ],
       });
+      const sendUserBookMarkList = userBookMarkList.map((data) =>
+        Object.assign(
+          {},
+          {
+            id: data['getBeer.id'],
+            beer_name: data['getBeer.beer_name'],
+            beer_img: data['getBeer.beer_img'],
+            rate: data['getBeer.rate'],
+          }
+        )
+      );
+
+      if (userBookMarkList) {
+        return res.status(200).json(sendUserBookMarkList);
+      }
+      return res.status(400).send('요청 정보를 찾을 수 없습니다.');
+    }
+
+    return res.status(401).send('유저 정보를 찾을 수 없습니다.');
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+});
+
+// 즐겨찾기 추가한 리스트 (최신순 정렬)
+router.post('/recent', async (req, res) => {
+  const { token } = req.body;
+  try {
+    if (token) {
+      const decoded: any = jwt.verify(token, secret);
+      const user_id = decoded.userId;
+      const userBookMarkList = await BookMark.findAll({
+        raw: true,
+        attributes: ['updatedAt'], // 포함된 모델에서의 정렬을 하고 싶을 때
+        order: [['updatedAt', 'DESC']],
+        where: {
+          user_id,
+        },
+        include: [
+          {
+            model: Beer,
+            as: 'getBeer',
+            attributes: ['id', 'beer_name', 'beer_img', 'rate'],
+          },
+        ],
+      });
+      console.log(userBookMarkList);
       const sendUserBookMarkList = userBookMarkList.map((data) =>
         Object.assign(
           {},
