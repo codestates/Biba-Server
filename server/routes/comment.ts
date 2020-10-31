@@ -17,7 +17,7 @@ router.get('/:beer_id', async (req, res) => {
     const beerComment = await Comment.findAll({
       where: { beer_id },
       raw: true,
-      order: [['rate', 'DESC']],
+      order: [['updatedAt', 'DESC']],
       include: [
         {
           model: User,
