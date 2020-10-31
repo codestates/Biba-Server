@@ -84,7 +84,7 @@ router.post('/recommend', async (req, res) => {
         acc.push(view);
         return acc;
       }, []);
-      console.log('::::::recentListArr:::::::', recentListArr);
+
       //뷰카운트 많이 방문한 순으로 20개
       const manyVisitList = await ViewCount.findAll({
         raw: true,
@@ -100,7 +100,7 @@ router.post('/recommend', async (req, res) => {
         acc.push(view);
         return acc;
       }, []);
-      console.log(':::::manyVisitListArr::::::', manyVisitListArr);
+
       // 코멘트 4점 이상 남긴 맥주들
       const highScoreList = await Comment.findAll({
         raw: true,
@@ -116,15 +116,6 @@ router.post('/recommend', async (req, res) => {
         acc.push(view);
         return acc;
       }, []);
-      console.log(':::::highScoreListArr::::::', highScoreListArr);
-      //교집합 구하기
-      // function intersect(a: number[], b: number[]): number[] {
-      //   var tmp: any = {},
-      //     res = [];
-      //   for (var i = 0; i < a.length; i++) tmp[a[i]] = 1;
-      //   for (var i = 0; i < b.length; i++) if (tmp[b[i]]) res.push(b[i]);
-      //   return res;
-      // }
 
       function union(a: number[], b: number[]): number[] {
         var tmp: any = {},
@@ -137,7 +128,7 @@ router.post('/recommend', async (req, res) => {
 
       const visitIntersect = union(recentListArr, manyVisitListArr);
       const manyVisitNrate = union(visitIntersect, highScoreListArr);
-      console.log('::::::manyVisitNrate::::::', manyVisitNrate);
+
       //교집합을 가지고 있는 태그들 모두 찾기
       const findTags = await Beer_tag.findAll({
         raw: true,
@@ -154,7 +145,6 @@ router.post('/recommend', async (req, res) => {
           attributes: ['id'],
         },
       });
-      console.log(findTags);
 
       const findTagsArr = findTags.reduce((acc: number[], val) => {
         let view = val['getTag.id'];
@@ -162,13 +152,10 @@ router.post('/recommend', async (req, res) => {
         return acc;
       }, []);
 
-      console.log(':::::::findTagsArr::::::', findTagsArr);
-
-      const recommendList = await Tag.findAll({
+      const tagIdList = await Tag.findAll({
         raw: true,
         attributes: ['id'],
         limit: 10,
-        // order: [[{ model: Beer, as: 'getBeer' }, 'rate', 'DESC']],
         where: {
           id: {
             [Sequelize.Op.in]: findTagsArr,
@@ -179,6 +166,7 @@ router.post('/recommend', async (req, res) => {
             model: Beer_tag,
             as: 'getBeer_tag',
             attributes: [],
+            order: [[{ model: Beer, as: 'getBeer' }, 'rate', 'DESC']],
             include: [
               {
                 model: Beer,
@@ -189,18 +177,42 @@ router.post('/recommend', async (req, res) => {
           },
         ],
       });
-      return res.status(200).json(recommendList);
-      // const sendRecommendList = recommendList.map((data) =>
-      //   Object.assign(
-      //     {},
-      //     {
-      //       id: data['getBeer_tag.getBeer.id'],
-      //       beer_name: data['getBeer_tag.getBeer.beer_name'],
-      //       beer_img: data['getBeer_tag.getBeer.beer_img'],
-      //       rate: data['getBeer_tag.getBeer.rate'],
-      //     }
-      //   )
-      // );
+
+      const recommendLisArr: number[] = tagIdList.reduce(
+        (acc: number[], val) => {
+          let view: any = val['getBeer_tag.getBeer.id'];
+          acc.push(view);
+          return acc;
+        },
+        []
+      );
+      // 배열의 중복 제거
+      const recommendList = [...new Set(recommendLisArr)];
+
+      const recommendBeerList = await Beer.findAll({
+        limit: 12,
+        raw: true,
+        where: {
+          id: {
+            [Sequelize.Op.in]: recommendList,
+          },
+        },
+        order: [['rate', 'DESC']],
+        attributes: ['id', 'beer_name', 'beer_img', 'rate'],
+      });
+
+      const sendRecommendBeerList = recommendBeerList.map((data) =>
+        Object.assign(
+          {},
+          {
+            id: data.id,
+            beer_name: data.beer_name,
+            beer_img: data.beer_img,
+            rate: data.rate,
+          }
+        )
+      );
+      return res.status(200).json(sendRecommendBeerList);
     } else {
       return res.status(400).send('유저를 찾을 수 없습니다.');
     }
@@ -393,78 +405,5 @@ router.get('/popular', async (req, res) => {
     return res.sendStatus(500);
   }
 });
-
-// router.post('/test-visit', async (req, res) => {
-//   try {
-//     const { user_id } = req.body;
-//     if (user_id) {
-//       const manyVisitList = await ViewCount.findAll({
-//         raw: true,
-//         limit: 10,
-//         attributes: ['beer_id'],
-//         order: [['count', 'DESC']],
-//         where: {
-//           user_id,
-//         },
-//       });
-
-//       // 맥주 아이디 배열
-//       const arrList = manyVisitList.reduce((acc: number[], val) => {
-//         let view = val['beer_id'];
-//         acc.push(view);
-//         return acc;
-//       }, []);
-//       console.log(arrList);
-//       const testList = await Beer_tag.findAll({
-//         raw: true,
-//         attributes: [],
-//         where: {
-//           id: {
-//             [Sequelize.Op.in]: arrList,
-//           },
-//         },
-//         include: [{
-
-//         }]
-//       })
-
-//       const BeerList = await Beer.findAll({
-//         raw: true,
-//         attributes: ['id', 'beer_name', 'beer_img', 'rate'],
-//         where: {
-//           id: {
-//             [Sequelize.Op.in]: arrList,
-//           },
-//         },
-//         include: [
-//           {
-//             model: Beer_tag,
-//             as: 'getBeer_tag',
-//             attributes: [],
-//           },
-//         ],
-//       });
-//       console.log(BeerList);
-//       const sendBeerList = BeerList.map((data) =>
-//         Object.assign(
-//           {},
-//           {
-//             id: data.id,
-//             beer_name: data.beer_name,
-//             beer_img: data.beer_img,
-//             rate: data.rate,
-//           }
-//         )
-//       );
-//       if (sendBeerList) {
-//         return res.status(200).json(sendBeerList);
-//       }
-//     } else {
-//       return res.status(401).send('유저 정보를 찾을 수 없습니다.');
-//     }
-//   } catch (e) {
-//     return res.sendStatus(500);
-//   }
-// });
 
 export default router;
