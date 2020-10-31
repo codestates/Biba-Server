@@ -47,7 +47,6 @@ router.get('/:search_word', async (req, res) => {
 router.post('/tag', async (req, res) => {
   try {
     const { tag } = req.body;
-    console.log(tag);
     if (!tag) {
       return res.status(400).send('태그를 찾을 수 없습니다.');
     } else {
