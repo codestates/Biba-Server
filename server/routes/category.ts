@@ -7,7 +7,7 @@ import Beer_tag from '../models/beer_tag';
 const router = express.Router();
 
 // 한 번도 방문한적 없는 (평점순으로)
-router.post('/never-visit', async (req, res) => {
+router.post('/recommend', async (req, res) => {
   try {
     const { user_id } = req.body;
     if (user_id) {
