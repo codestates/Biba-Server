@@ -3,6 +3,8 @@ import Beer from '../models/beers';
 import * as Sequelize from 'sequelize';
 import Comment from '../models/comments';
 import Style from '../models/styles';
+import Tag from '../models/tags';
+import Beer_tag from '../models/beer_tag';
 
 const router = express.Router();
 
@@ -36,6 +38,56 @@ router.get('/:search_word', async (req, res) => {
     );
 
     return res.status(200).json(sendSearchBeerResults);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+});
+
+// 태그 검색
+router.post('/tag', async (req, res) => {
+  try {
+    const { tag } = req.body;
+    console.log(tag);
+    if (!tag) {
+      return res.status(400).send('태그를 찾을 수 없습니다.');
+    } else {
+      const searchTag = await Tag.findAll({
+        raw: true,
+        attributes: [],
+        where: {
+          tag_name: {
+            [Sequelize.Op.like]: '%' + tag + '%',
+          },
+        },
+        include: [
+          {
+            model: Beer_tag,
+            as: 'getBeer_tag',
+            attributes: [],
+            include: [
+              {
+                model: Beer,
+                attributes: ['id', 'beer_name', 'beer_img', 'rate'],
+                as: 'getBeer',
+              },
+            ],
+          },
+        ],
+      });
+
+      const sendSearchTag = searchTag.map((data) =>
+        Object.assign(
+          {},
+          {
+            id: data['getBeer_tag.getBeer.id'],
+            beer_name: data['getBeer_tag.getBeer.beer_name'],
+            beer_img: data['getBeer_tag.getBeer.beer_img'],
+            rate: data['getBeer_tag.getBeer.rate'],
+          }
+        )
+      );
+      return res.status(200).json(sendSearchTag);
+    }
   } catch (e) {
     return res.sendStatus(500);
   }
