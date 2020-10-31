@@ -29,7 +29,7 @@ const config: IConfigGroup = {
   development: {
     username,
     password: process.env.DB_PD!,
-    database: 'Biba',
+    database: 'biba',
     host,
     port,
     dialect: 'mysql',
