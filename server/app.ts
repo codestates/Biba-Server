@@ -8,6 +8,7 @@ import * as google from 'passport-google-oauth';
 import * as chalk from 'chalk';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import User from './models/user';
+
 //google.OAuth2Strategy;
 
 //middleware
@@ -34,6 +35,7 @@ const app = express();
 const port = 4000;
 dotenv.config();
 let user = {};
+const secret = process.env.JWT!;
 
 //use middleware
 app.use(
@@ -43,6 +45,7 @@ app.use(
     saveUninitialized: true,
     rolling: true,
     cookie: {
+      sameSite: 'none',
       httpOnly: true,
       maxAge: 60000 * 30, // 30분
       secure: true, //s 만 받으려면
@@ -75,6 +78,7 @@ app.use(
       'https://beer4.wyz',
       'http://biba.website',
       'https://biba.website',
+      'https://google.com',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true, // 쿠키사용시 설정
@@ -152,20 +156,19 @@ app.use('/bookmark', bookMarkRouter);
 app.use('/report', reportRouter);
 
 app.get('/auth', (req: Request, res: Response) => {
-  let sess: any = req.session;
-  console.log(sess.user_id);
-  if (sess.user_id) {
+  const { token } = req.body;
+
+  console.log(token);
+  if (token) {
+    const decoded: any = jwt.verify(token, secret);
+    const user_id = decoded.userId;
     User.findOne({
       where: {
-        id: sess.user_id,
+        id: user_id,
       },
     })
       .then((data: any) => {
         if (data) {
-          let token = jwt.sign(
-            { data: data.email, userId: data.id },
-            process.env.JWT!
-          );
           res.status(200).json({
             userData: {
               id: data.id,
@@ -180,10 +183,10 @@ app.get('/auth', (req: Request, res: Response) => {
         }
       })
       .catch((err: any) => {
-        res.status(404).send(err);
+        res.status(500).send(err);
       });
-  } else if (sess.user_id === undefined) {
-    res.status(400).send('인증 정보가 없습니다.');
+  } else {
+    res.status(404).send('인증 정보가 없습니다.');
   }
 });
 

@@ -243,7 +243,6 @@ router.post('/login', (req, res) => {
     .createHmac('sha512', process.env.CRYPTO!)
     .update(saltedPassword)
     .digest('hex');
-  const sess: any = req.session;
 
   User.findOne({
     where: {
@@ -253,7 +252,6 @@ router.post('/login', (req, res) => {
   })
     .then((data: any) => {
       if (data) {
-        sess.user_id = data.id;
         let token = jwt.sign(
           { data: email, userId: data.id },
           process.env.JWT!
