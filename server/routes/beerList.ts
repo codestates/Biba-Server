@@ -20,11 +20,7 @@ router.get('/list', async (req, res) => {
     const allBeerList = await Beer.findAll({
       limit: 10,
       raw: true,
-      where: {
-        id: {
-          [Sequelize.Op.in]: [1],
-        },
-      },
+      order: [['createdAt', 'ASC']],
       attributes: ['id', 'beer_name', 'poster', 'rate'],
     });
 
