@@ -8,6 +8,7 @@ import * as google from 'passport-google-oauth';
 import * as chalk from 'chalk';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import User from './models/user';
+import * as cookieParser from 'cookie-parser';
 
 //google.OAuth2Strategy;
 
@@ -30,6 +31,9 @@ import commentRouter from './routes/comment';
 import bookMarkRouter from './routes/bookmark';
 import reportRouter from './routes/report';
 import categoryRouter from './routes/category';
+import Visitors from './models/visitors';
+import { where } from 'sequelize/types';
+import ViewCount from './models/viewCount';
 
 const app = express();
 const port = 4000;
@@ -59,6 +63,7 @@ app.use(passport.session());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // TODO: true 사용 이유?
+app.use(cookieParser());
 
 //sequelize sync
 sequelize
@@ -159,7 +164,7 @@ app.use('/report', reportRouter);
 
 app.get('/auth', (req: Request, res: Response) => {
   let sess: any = req.session;
-  console.log('::::server Auth::::::', sess.user_id);
+
   if (sess.user_id) {
     const decoded: any = jwt.verify(sess.user_id, secret);
     const user_id = decoded.userId;
@@ -187,13 +192,99 @@ app.get('/auth', (req: Request, res: Response) => {
         res.status(500).send(err);
       });
   } else {
-    res.status(404).send('인증 정보가 없습니다.');
+    let count = 0;
+    if (req.cookies.count) {
+      count = parseInt(req.cookies.count);
+      res.cookie('count', '', { maxAge: 3600000 });
+      let now = new Date();
+      let date = now.getFullYear() + '/' + now.getMonth() + '/' + now.getDate();
+      if (date !== req.cookies.countDate) {
+        res.cookie('countDate', date, { maxAge: 86400000 });
+      }
+    } else {
+      count = 0;
+    }
+    count = count + 1;
+    Visitors.findOrCreate({
+      raw: true,
+      where: {
+        id: 1,
+      },
+    }).then(([data, created]) => {
+      if (!created) {
+        Visitors.update(
+          { totalVisit: data.totalVisit + 1 },
+          { where: { id: 1 } }
+        );
+      } else if (created) {
+        Visitors.update(
+          { totalVisit: data.totalVisit + 1 },
+          { where: { id: 1 } }
+        );
+      }
+    });
+    return res.status(404).send('인증 정보가 없습니다.');
   }
 });
 
-app.get('/', (req: Request, res: Response) => {
-  res.status(200).send('성공!');
+app.get('/count', async (req, res) => {
+  const total = await Visitors.findOne({
+    where: {
+      id: 1,
+    },
+    raw: true,
+  });
+  if (total) {
+    return res.status(200).json({
+      totalVisits: total.totalVisit,
+    });
+  }
+  return res.sendStatus(400);
 });
+
+// app.get('/count', (req: Request, res: Response) => {
+//   let count = 0;
+//   try {
+//     if (req.cookies.count) {
+//       count = parseInt(req.cookies.count);
+//       res.cookie('count', '', { maxAge: 3600000 });
+//       let now = new Date();
+//       let date = now.getFullYear() + '/' + now.getMonth() + '/' + now.getDate();
+//       console.log(':::::date:::::', date);
+//       console.log(':::::req.cookies.countDate::::::', req.cookies.countDate);
+//       if (date !== req.cookies.countDate) {
+//         res.cookie('countDate', date, { maxAge: 86400000 });
+//       } else if (date === req.cookies.countDate) {
+//         return res.sendStatus(200);
+//       }
+//     } else {
+//       count = 0;
+//     }
+//     count = count + 1;
+//     Visitors.findOrCreate({
+//       raw: true,
+//       where: {
+//         id: 1,
+//       },
+//     }).then(([data, created]) => {
+//       if (!created) {
+//         Visitors.update(
+//           { totalVisit: data.totalVisit + 1 },
+//           { where: { id: 1 } }
+//         );
+//       } else if (created) {
+//         Visitors.update(
+//           { totalVisit: data.totalVisit + 1 },
+//           { where: { id: 1 } }
+//         );
+//       }
+//     });
+//     res.cookie('count', count);
+//     res.status(200).send('count : ' + count);
+//   } catch (e) {
+//     return res.sendStatus(500);
+//   }
+// });
 
 app.get('/health', (req, res) => {
   console.log('Time:', Date());
