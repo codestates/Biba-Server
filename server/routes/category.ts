@@ -64,7 +64,7 @@ const router = express.Router();
 //   }
 // });
 
-// 최근 둘러본 맥주
+// 취향 저격 맥주
 router.post('/recommend', async (req, res) => {
   try {
     const { user_id } = req.body;

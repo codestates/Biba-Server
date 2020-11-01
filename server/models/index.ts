@@ -12,6 +12,7 @@ import User, { associate as associateUser } from './user';
 import BookMark, { associate as associateBookMark } from './bookmark';
 import Graph, { associate as associateGraph } from './graph';
 import ViewCount, { associate as associateViewCount } from './viewCount';
+import Visitors, { associate as associateVisitors } from './visitors';
 
 export * from './sequelize';
 
@@ -30,6 +31,7 @@ const db = {
   BookMark,
   Graph,
   ViewCount,
+  Visitors,
 };
 
 export type dbType = typeof db;
@@ -47,3 +49,4 @@ associateUser(db);
 associateBookMark(db);
 associateGraph(db);
 associateViewCount(db);
+associateVisitors(db);

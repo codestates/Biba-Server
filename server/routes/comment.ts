@@ -161,42 +161,6 @@ router.post('/update', (req, res) => {
   }
 });
 
-// 코멘트 수정
-router.post('/update', async (req, res) => {
-  try {
-    const { comment, rate, token, beer_id } = req.body;
-
-    if (token) {
-      const decoded: any = jwt.verify(token, secret);
-      const user_id = decoded.userId;
-      if (user_id) {
-        const updateComment = await Comment.update(
-          {
-            rate,
-            comment,
-          },
-          {
-            where: {
-              user_id,
-              beer_id,
-            },
-          }
-        ).catch(() => res.sendStatus(500));
-        if (updateComment) {
-          AverageRate(beer_id);
-          return res.status(201).send('수정 완료');
-        }
-        return res.status(400).send('잘못된 요청입니다.');
-      }
-      return res.status(403).send('삭제 권한이 없습니다.');
-    } else {
-      return res.status(401).send('회원 정보를 찾을 수 없습니다.');
-    }
-  } catch (e) {
-    return res.sendStatus(500);
-  }
-});
-
 // 코멘트 삭제
 router.post('/delete', async (req, res) => {
   try {
