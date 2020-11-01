@@ -42,6 +42,25 @@ dotenv.config();
 let user = {};
 const secret = process.env.JWT!;
 
+passport.use(
+  new GitHubStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      callbackURL: 'https://beer4.xyz/auth/google/callback',
+    },
+    function (
+      accessToken: string,
+      refreshToken: string,
+      profile: github.Profile,
+      cb
+    ) {
+      user = { ...profile };
+      return cb(null, profile);
+    }
+  )
+);
+
 //use middleware
 app.use(
   session({
@@ -111,25 +130,6 @@ passport.deserializeUser((user, cb) => {
   // 매개변수 user는 serializeUser의 done의 인자 user를 받은 것
   cb(null, user); // 여기의 user가 req.user가 됨
 });
-
-passport.use(
-  new GitHubStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      callbackURL: 'https://beer4.xyz/auth/google/callback',
-    },
-    function (
-      accessToken: string,
-      refreshToken: string,
-      profile: github.Profile,
-      cb
-    ) {
-      user = { ...profile };
-      return cb(null, profile);
-    }
-  )
-);
 
 // google router
 app.get(
