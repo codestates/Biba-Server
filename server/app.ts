@@ -6,9 +6,10 @@ import { sequelize } from './models';
 import * as passport from 'passport';
 import * as google from 'passport-google-oauth';
 import * as chalk from 'chalk';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 import User from './models/user';
 import * as cookieParser from 'cookie-parser';
+import * as github from 'passport-github';
+const GitHubStrategy = github.Strategy;
 
 //google.OAuth2Strategy;
 
@@ -112,7 +113,7 @@ passport.deserializeUser((user, cb) => {
 });
 
 passport.use(
-  new google.OAuth2Strategy(
+  new GitHubStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
@@ -121,12 +122,9 @@ passport.use(
     function (
       accessToken: string,
       refreshToken: string,
-      profile: google.Profile,
+      profile: github.Profile,
       cb
     ) {
-      // id, name, email, nickname
-      console.log(chalk.blue(JSON.stringify(profile)));
-      // User.findOrCreate({ where: email }
       user = { ...profile };
       return cb(null, profile);
     }
@@ -136,10 +134,10 @@ passport.use(
 // google router
 app.get(
   '/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
+  passport.authenticate('github', { scope: ['profile'] })
 );
 
-app.get('/auth/google/callback', passport.authenticate('google'), function (
+app.get('/auth/google/callback', passport.authenticate('github'), function (
   req,
   res
 ) {
