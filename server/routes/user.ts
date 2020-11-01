@@ -1,7 +1,7 @@
 //declare Express
 import * as express from 'express';
 import User from '../models/user';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 
 //middleware
 import * as jwt from 'jsonwebtoken';
@@ -11,7 +11,6 @@ import * as multerS3 from 'multer-s3';
 import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import { AnyLengthString } from 'aws-sdk/clients/comprehend';
 dotenv.config();
 
 //multer,aws-sdk,s3 연동
@@ -142,6 +141,7 @@ router.post('/changepassword', (req, res) => {
 
   // crypto: 단방향이며, 비번 변경시 비밀키는 동일하므로 항상 요청시 동일한 암호화된 비밀번호를 DB에서 확인할 수 있다.
 
+  // 현재 입력된 비밀번호(암호화를 거침)가 db 의 암호화된 비밀번호와 같으면 진행한다.
   const saltedPassword = newPassword + process.env.SALT!;
   const hashPassword = crypto
     .createHmac('sha512', process.env.CRYPTO!)
@@ -152,7 +152,9 @@ router.post('/changepassword', (req, res) => {
   User.findOne({
     where: { email: decoded_data.data },
   }).then((data: any) => {
-    data.dataValues.password !== hashPassword
+    // 만약 현재 비밀번호가 db에 암호화된 비밀번호와 같으면 아래 진행
+    if(currentPassword === hashPassword) {
+      data.dataValues.password !== hashPassword
       ? User.update(
           { password: hashPassword },
           { where: { email: decoded_data.data } }
@@ -164,6 +166,7 @@ router.post('/changepassword', (req, res) => {
             res.status(400).send('서버가 요청의 구문을 인식하지 못했습니다.');
           })
       : res.status(409).send('비밀번호 변경에 실패하셨습니다.');
+    }
   });
 });
 
