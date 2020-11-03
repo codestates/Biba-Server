@@ -28,10 +28,6 @@ const today = () => {
   );
 };
 
-// location 타입에러 해결을 위한 files 설정
-interface MulterRequest extends Request {
-  files: any;
-}
 
 // aws s3 객체 생성 및 multer upload setting
 const s3 = new aws.S3();
@@ -39,7 +35,7 @@ const upload = multer({
   limits: {
     fileSize: 1024 * 2000,
   },
-
+  
   storage: multerS3({
     s3: s3,
     bucket: 'biba-user-profile',
@@ -50,8 +46,17 @@ const upload = multer({
   }),
 });
 
+
+
+
+
+
+// location 타입에러 해결을 위한 files 설정
+interface MulterRequest extends Request {
+  files: any;
+}
+
 // * POST /users/profile
-// 선택한 사진을 s3에 업로드하며, aws rds 에 profile 에 location 을 저장한다.
 router.post('/profile', upload.array('image'), (req, res) => {
   try {
     const { nickname } = req.body;
@@ -74,7 +79,6 @@ router.post('/profile', upload.array('image'), (req, res) => {
 });
 
 // * POST /users/profile/delete
-// DB 의 profile 삭제 && s3 img 삭제
 router.post('/profile/delete', function (req, res) {
   const {
     body: { nickname },
@@ -152,8 +156,6 @@ router.post('/changepassword', (req, res) => {
   User.findOne({
     where: { email: decoded_data.data },
   }).then((data: any) => {
-    // 만약 현재 비밀번호가 db에 암호화된 비밀번호와 같으면 아래 진행
-    if(currentPassword === hashPassword) {
       data.dataValues.password !== hashPassword
       ? User.update(
           { password: hashPassword },
@@ -166,7 +168,7 @@ router.post('/changepassword', (req, res) => {
             res.status(400).send('서버가 요청의 구문을 인식하지 못했습니다.');
           })
       : res.status(409).send('비밀번호 변경에 실패하셨습니다.');
-    }
+    
   });
 });
 
