@@ -64,7 +64,7 @@ const router = express.Router();
 //   }
 // });
 
-// 취향 저격 맥주
+//------------------------------------------------------------취향 저격 맥주
 router.post('/recommend', async (req, res) => {
   try {
     const { user_id } = req.body;
@@ -221,7 +221,7 @@ router.post('/recommend', async (req, res) => {
   }
 });
 
-// 많이 방문한 맥주
+//------------------------------------------------------------많이 방문한 맥주
 router.post('/many-visit', async (req, res) => {
   try {
     const { user_id } = req.body;
@@ -272,7 +272,7 @@ router.post('/many-visit', async (req, res) => {
   }
 });
 
-// 밀 맥주
+//------------------------------------------------------------밀 맥주
 router.get('/wheat', async (req, res) => {
   try {
     const BeerList = await Beer.findAll({
@@ -305,7 +305,7 @@ router.get('/wheat', async (req, res) => {
   }
 });
 
-// 독일 맥주
+//------------------------------------------------------------독일 맥주
 router.get('/germany', async (req, res) => {
   try {
     const germanyBeerList = await Beer.findAll({
@@ -337,7 +337,7 @@ router.get('/germany', async (req, res) => {
   }
 });
 
-// 최신 맥주
+//------------------------------------------------------------최신 맥주
 router.get('/recent', async (req, res) => {
   try {
     const recentBeerList = await Beer.findAll({
@@ -367,7 +367,7 @@ router.get('/recent', async (req, res) => {
   }
 });
 
-// 인기 맥주
+//------------------------------------------------------------인기 맥주
 // rate 높은 순으로 정렬
 // 최근 코멘트 우선순으로
 // 10개 까지 랜덤하게 정렬
