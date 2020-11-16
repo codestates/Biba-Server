@@ -14,14 +14,16 @@ import viewCount from '../modules/viewCount';
 
 const router = express.Router();
 
-// 매인 맥주 리스트 (포스터 선별해서 보여주기)
+//----------------------------------------------------------매인 맥주 리스트(오늘의 맥주) (포스터 선별해서 보여주기)
 router.get('/list', async (req, res) => {
   try {
     const allBeerList = await Beer.findAll({
-      limit: 10,
       raw: true,
-      order: [['createdAt', 'ASC']],
-      attributes: ['id', 'beer_name', 'poster', 'rate'],
+      where: {
+        show_poster: 1,
+      },
+      order: [['updatedAt', 'DESC']],
+      attributes: ['id', 'beer_name', 'poster', 'rate', 'mobile'],
     });
 
     const sendAllBeerList = allBeerList.map((data) =>
@@ -31,6 +33,7 @@ router.get('/list', async (req, res) => {
           id: data.id,
           beer_name: data.beer_name,
           beer_img: data.poster,
+          mobile: data.mobile,
           rate: data.rate,
         }
       )
@@ -45,7 +48,7 @@ router.get('/list', async (req, res) => {
   }
 });
 
-// 맥주 상세 정보
+//----------------------------------------------------------맥주 상세 정보
 router.post('/:id', async (req, res) => {
   try {
     const { id } = req.params;

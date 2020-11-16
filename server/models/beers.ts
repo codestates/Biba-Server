@@ -27,6 +27,8 @@ class Beer extends Model {
   public explain!: string;
   public source!: string;
   public poster!: string;
+  public mobile!: string;
+  public show_poster!: number;
   public ['getComment.rate']: number;
   public ['getCompany.company']: string;
   public ['getCountry.country']: string;
@@ -91,6 +93,14 @@ Beer.init(
     poster: {
       type: DataTypes.STRING,
       defaultValue: '',
+    },
+    mobile: {
+      type: DataTypes.STRING,
+      defaultValue: '',
+    },
+    show_poster: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
     },
   },
   {
