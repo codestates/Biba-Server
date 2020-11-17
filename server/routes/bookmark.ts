@@ -119,7 +119,6 @@ router.post('/recent', async (req, res) => {
           },
         ],
       });
-      console.log(userBookMarkList);
       const sendUserBookMarkList = userBookMarkList.map((data) =>
         Object.assign(
           {},

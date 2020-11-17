@@ -5,10 +5,11 @@ import Comment from '../models/comments';
 import Style from '../models/styles';
 import Tag from '../models/tags';
 import Beer_tag from '../models/beer_tag';
+import tagCount from '../modules/tagCount';
 
 const router = express.Router();
 
-// 맥주 검색
+//-----------------------------------------------------------맥주 검색
 router.get('/:search_word', async (req, res) => {
   try {
     const { search_word } = req.params;
@@ -43,7 +44,7 @@ router.get('/:search_word', async (req, res) => {
   }
 });
 
-// 태그 검색
+//-----------------------------------------------------------태그 검색
 router.post('/tag', async (req, res) => {
   try {
     const { tag } = req.body;
@@ -52,7 +53,7 @@ router.post('/tag', async (req, res) => {
     } else {
       const searchTag = await Tag.findAll({
         raw: true,
-        attributes: [],
+        attributes: ['id'],
         where: {
           tag_name: {
             [Sequelize.Op.like]: '%' + tag + '%',
@@ -73,7 +74,7 @@ router.post('/tag', async (req, res) => {
           },
         ],
       });
-
+      tagCount(searchTag[0].id);
       const sendSearchTag = searchTag.map((data) =>
         Object.assign(
           {},

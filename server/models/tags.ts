@@ -5,6 +5,7 @@ import { sequelize } from './sequelize';
 class Tag extends Model {
   public readonly id!: number;
   public tag_name!: string;
+  public count!: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
   public ['getBeer_tag.getBeer.id']: string;
@@ -18,6 +19,10 @@ Tag.init(
     tag_name: {
       type: DataTypes.STRING,
       defaultValue: '',
+    },
+    count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
     },
   },
   {

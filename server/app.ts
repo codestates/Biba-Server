@@ -35,6 +35,7 @@ import categoryRouter from './routes/category';
 import Visitors from './models/visitors';
 import { where } from 'sequelize/types';
 import ViewCount from './models/viewCount';
+import mobileRoutes from './routes/mobile';
 
 const app = express();
 const port = 4000;
@@ -142,7 +143,6 @@ app.get('/auth/google/callback', passport.authenticate('github'), function (
   res
 ) {
   // Successful authentication, redirect home.
-  console.log('res', res);
   res.redirect('/login');
 });
 
@@ -159,6 +159,7 @@ app.use('/search', searchWord);
 app.use('/comment', commentRouter);
 app.use('/bookmark', bookMarkRouter);
 app.use('/report', reportRouter);
+app.use('/mobile', mobileRoutes);
 
 app.get('/auth', (req: Request, res: Response) => {
   let sess: any = req.session;
@@ -239,50 +240,6 @@ app.get('/count', async (req, res) => {
   }
   return res.sendStatus(400);
 });
-
-// app.get('/count', (req: Request, res: Response) => {
-//   let count = 0;
-//   try {
-//     if (req.cookies.count) {
-//       count = parseInt(req.cookies.count);
-//       res.cookie('count', '', { maxAge: 3600000 });
-//       let now = new Date();
-//       let date = now.getFullYear() + '/' + now.getMonth() + '/' + now.getDate();
-//       console.log(':::::date:::::', date);
-//       console.log(':::::req.cookies.countDate::::::', req.cookies.countDate);
-//       if (date !== req.cookies.countDate) {
-//         res.cookie('countDate', date, { maxAge: 86400000 });
-//       } else if (date === req.cookies.countDate) {
-//         return res.sendStatus(200);
-//       }
-//     } else {
-//       count = 0;
-//     }
-//     count = count + 1;
-//     Visitors.findOrCreate({
-//       raw: true,
-//       where: {
-//         id: 1,
-//       },
-//     }).then(([data, created]) => {
-//       if (!created) {
-//         Visitors.update(
-//           { totalVisit: data.totalVisit + 1 },
-//           { where: { id: 1 } }
-//         );
-//       } else if (created) {
-//         Visitors.update(
-//           { totalVisit: data.totalVisit + 1 },
-//           { where: { id: 1 } }
-//         );
-//       }
-//     });
-//     res.cookie('count', count);
-//     res.status(200).send('count : ' + count);
-//   } catch (e) {
-//     return res.sendStatus(500);
-//   }
-// });
 
 app.get('/health', (req, res) => {
   console.log('Time:', Date());
