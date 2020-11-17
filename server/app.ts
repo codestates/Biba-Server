@@ -143,7 +143,6 @@ app.get('/auth/google/callback', passport.authenticate('github'), function (
   res
 ) {
   // Successful authentication, redirect home.
-  console.log('res', res);
   res.redirect('/login');
 });
 

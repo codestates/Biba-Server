@@ -112,7 +112,6 @@ router.post('/update', (req, res) => {
     const { comment, rate, beer_id, token } = req.body;
     if (token) {
       const decoded: any = jwt.verify(token, secret);
-      console.log('decoded', decoded);
       const user_id = decoded.userId;
       // 유저가 코멘트를 남겼는지 확인
       Comment.findOrCreate({

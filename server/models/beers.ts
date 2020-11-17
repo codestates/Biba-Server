@@ -29,7 +29,7 @@ class Beer extends Model {
   public poster!: string;
   public mobile!: string;
   public show_poster!: number;
-  public recommend!: boolean;
+  public recommend!: number;
   public ['getComment.rate']: number;
   public ['getCompany.company']: string;
   public ['getCountry.country']: string;

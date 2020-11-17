@@ -74,7 +74,6 @@ router.post('/tag', async (req, res) => {
           },
         ],
       });
-      console.log(':::::::searchTag:::::::', searchTag);
       tagCount(searchTag[0].id);
       const sendSearchTag = searchTag.map((data) =>
         Object.assign(

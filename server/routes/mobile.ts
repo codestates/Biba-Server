@@ -25,10 +25,10 @@ router.get('/search', async (req, res) => {
         recommend: 1,
       },
       raw: true,
-      attributes: ['id', 'beer_name', 'poster', 'rate', 'mobile'],
+      attributes: ['id', 'beer_name', 'beer_img', 'rate'],
     });
 
-    const sendList = beerList.map((data) =>
+    const sendBeerList = beerList.map((data) =>
       Object.assign(
         {},
         {
@@ -40,8 +40,8 @@ router.get('/search', async (req, res) => {
       )
     );
 
-    if (sendList) {
-      return res.status(200).json({ recommend: sendList, tags });
+    if (sendBeerList) {
+      return res.status(200).json({ recommend: sendBeerList, tags });
     } else {
       return res.status(404).send('리스트를 찾을 수 없습니다.');
     }
