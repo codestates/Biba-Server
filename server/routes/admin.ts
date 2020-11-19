@@ -3,6 +3,12 @@ import Beer from '../models/beers';
 import User from '../models/user';
 import * as Sequelize from 'sequelize';
 import Report from '../models/report';
+import ViewCount from '../models/viewCount';
+import BookMark from '../models/bookmark';
+import Comment from '../models/comments';
+import { isArray } from 'util';
+import Graph from '../models/graph';
+import Beer_tag from '../models/beer_tag';
 
 const router = express.Router();
 
@@ -183,20 +189,39 @@ router.get('/beerlist/:id', async (req, res) => {
   }
 });
 
-router.delete('/beerlist/:id', (req, res) => {
+router.delete('/beerlist/:id', async (req, res) => {
   try {
-    console.log('::::::::::::::', req.params.id);
     const { id } = req.params;
-    // const test = await Beer.findOne({
-    //   where: { id },
-    //   raw: true,
-    // });
-    // console.log(':::::test:::::', test);
-    Beer.destroy({
-      where: {
-        id: id,
-      },
-    }).then(() => res.status(201).send('delete'));
+    const numbers = req.body;
+    if (numbers) {
+      await ViewCount.destroy({
+        where: { beer_id: { [Sequelize.Op.in]: numbers } },
+      });
+      await Graph.destroy({
+        where: { id: { [Sequelize.Op.in]: numbers } },
+      });
+      await Comment.destroy({
+        where: { beer_id: { [Sequelize.Op.in]: numbers } },
+      });
+      await BookMark.destroy({
+        where: { beer_id: { [Sequelize.Op.in]: numbers } },
+      });
+      await Beer_tag.destroy({
+        where: { beer_id: { [Sequelize.Op.in]: numbers } },
+      });
+      await Beer.destroy({
+        where: { id: { [Sequelize.Op.in]: numbers } },
+      });
+      res.status(201).send('delete');
+    } else {
+      await ViewCount.destroy({ where: { beer_id: id } });
+      await Graph.destroy({ where: { beer_id: id } });
+      await Comment.destroy({ where: { beer_id: id } });
+      await BookMark.destroy({ where: { beer_id: id } });
+      await Beer_tag.destroy({ where: { beer_id: id } });
+      await Beer.destroy({ where: { id } });
+      res.status(201).send('delete');
+    }
   } catch (e) {
     return res.sendStatus(500);
   }
@@ -330,13 +355,34 @@ router.put('/userlist/:id', async (req, res) => {
   }
 });
 
-router.delete('/userlist/:id', (req, res) => {
+router.delete('/userlist/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const numbers = req.body;
+    console.log(':::::body::::::', req.body);
     console.log('::::::delete url', req.url);
-    console.log('::::::::::/userlist/:id id::::::::', typeof id);
-    User.destroy({ where: { id } }).then(() => res.status(201).send('delte'));
-    res.status(200).send('');
+    console.log('::::::::::/userlist/:id id::::::::', isArray(numbers));
+    if (numbers) {
+      await ViewCount.destroy({
+        where: { user_id: { [Sequelize.Op.in]: numbers } },
+      });
+      await BookMark.destroy({
+        where: { user_id: { [Sequelize.Op.in]: numbers } },
+      });
+      await Comment.destroy({
+        where: { user_id: { [Sequelize.Op.in]: numbers } },
+      });
+      await User.destroy({
+        where: { id: { [Sequelize.Op.in]: numbers } },
+      });
+      res.status(201).send('delete');
+    } else {
+      await ViewCount.destroy({ where: { user_id: id } });
+      await BookMark.destroy({ where: { user_id: id } });
+      await Comment.destroy({ where: { user_id: id } });
+      await User.destroy({ where: { id } });
+      res.status(201).send('delete');
+    }
   } catch (e) {
     return res.sendStatus(500);
   }
