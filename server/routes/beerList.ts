@@ -39,8 +39,12 @@ router.get('/list', async (req, res) => {
       )
     );
 
+    const deley = setTimeout(function () {
+      res.status(200).json(sendAllBeerList);
+    }, 1500);
+
     if (sendAllBeerList) {
-      return res.status(200).json(sendAllBeerList);
+      return deley;
     } else {
       return res.status(404).send('리스트를 찾을 수 없습니다.');
     }
