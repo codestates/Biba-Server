@@ -15,13 +15,17 @@ router.get('/beerlist', async (req, res) => {
     const pageArr: RegExpMatchArray | null = url.match(/page=(\d+(\d)*)/);
     const targetArr: RegExpMatchArray | null = url.match(/orderBy=(\w+(\w)*)/);
     const sortArr: RegExpMatchArray | null = url.match(/orderDir=(\w+(\w)*)/);
-    if (targetArr && sortArr && limitArr && pageArr) {
+    const searchArr: RegExpMatchArray | null = url.match(/search=(\w+(\w)*)/);
+    if (targetArr && sortArr && limitArr && pageArr && searchArr) {
       const limit = Number(limitArr[1]);
       const page = Number(pageArr[1]);
       const start = limit * page - limit + 1;
       const end = limit * page;
       const target = String(targetArr[1]);
       const sort = String(sortArr[1]);
+      const search_word = searchArr[1];
+      console.log('::::::::searchWord::::::::', search_word);
+      console.log('@@@@@@@', typeof search_word);
 
       // const limit = Number(url.slice(16)[0] + url.slice(16)[1]);
       // const page = Number(url.slice(24)[0]);
@@ -29,25 +33,56 @@ router.get('/beerlist', async (req, res) => {
       // const end = limit * page;
       const allBeerList = await Beer.findAll({});
 
-      const sendBeerList = await Beer.findAll({
-        raw: true,
-        where: {
-          id: {
-            [Sequelize.Op.between]: [start, end],
+      if (search_word === 'undefined') {
+        const sendBeerList = await Beer.findAll({
+          raw: true,
+          where: {
+            id: {
+              [Sequelize.Op.between]: [start, end],
+            },
           },
-        },
-        order: [[target, sort]],
-      });
-
-      // const delay = setTimeout(function(){
-      //     res.status(200).json(sendAllBeerList)
-      // }, 5000)
-
-      const total = String(allBeerList.length);
-      if (allBeerList) {
-        res.header('Access-Control-Expose-Headers', 'X-Total-Count');
-        res.set('X-Total-Count', total);
-        return res.status(200).json(sendBeerList);
+          order: [[target, sort]],
+        });
+        const total = String(allBeerList.length);
+        if (allBeerList) {
+          res.header('Access-Control-Expose-Headers', 'X-Total-Count');
+          res.set('X-Total-Count', total);
+          return res.status(200).json(sendBeerList);
+        }
+      } else {
+        //검색어가 있을 때
+        const sendBeerList = await Beer.findAll({
+          raw: true,
+          where: {
+            [Sequelize.Op.or]: [
+              {
+                search_word: {
+                  [Sequelize.Op.like]: '%' + search_word + '%',
+                },
+              },
+              {
+                beer_name_en: {
+                  [Sequelize.Op.like]: '%' + search_word + '%',
+                },
+              },
+              {
+                id: {
+                  [Sequelize.Op.like]: '%' + search_word + '%',
+                },
+              },
+            ],
+            // search_word: {
+            //   [Sequelize.Op.like]: '%' + search_word + '%',
+            // },
+          },
+          order: [[target, sort]],
+        });
+        const total = String(allBeerList.length);
+        if (allBeerList) {
+          res.header('Access-Control-Expose-Headers', 'X-Total-Count');
+          res.set('X-Total-Count', total);
+          return res.status(200).json(sendBeerList);
+        }
       }
     }
   } catch (e) {
@@ -160,29 +195,63 @@ router.get('/userlist', async (req, res) => {
     const pageArr: RegExpMatchArray | null = url.match(/page=(\d+(\d)*)/);
     const targetArr: RegExpMatchArray | null = url.match(/orderBy=(\w+(\w)*)/);
     const sortArr: RegExpMatchArray | null = url.match(/orderDir=(\w+(\w)*)/);
-    if (targetArr && sortArr && limitArr && pageArr) {
+    const searchArr: RegExpMatchArray | null = url.match(/search=(\w+(\w)*)/);
+    if (targetArr && sortArr && limitArr && pageArr && searchArr) {
       const limit = Number(limitArr[1]);
       const page = Number(pageArr[1]);
       const start = limit * page - limit + 1;
       const end = limit * page;
       const target = String(targetArr[1]);
       const sort = String(sortArr[1]);
+      const search_word = searchArr[1];
 
       const allUserList = await User.findAll({});
       const total = String(allUserList.length);
-      const sendUserList = await User.findAll({
-        raw: true,
-        where: {
-          id: {
-            [Sequelize.Op.between]: [start, end],
+
+      if (search_word === 'undefined') {
+        const sendUserList = await User.findAll({
+          raw: true,
+          where: {
+            id: {
+              [Sequelize.Op.between]: [start, end],
+            },
           },
-        },
-        order: [[target, sort]],
-      });
-      if (allUserList) {
-        res.header('Access-Control-Expose-Headers', 'X-Total-Count');
-        res.set('X-Total-Count', total);
-        return res.status(200).json(sendUserList);
+          order: [[target, sort]],
+        });
+        if (allUserList) {
+          res.header('Access-Control-Expose-Headers', 'X-Total-Count');
+          res.set('X-Total-Count', total);
+          return res.status(200).json(sendUserList);
+        }
+      } else {
+        const sendUserList = await User.findAll({
+          raw: true,
+          where: {
+            [Sequelize.Op.or]: [
+              {
+                email: {
+                  [Sequelize.Op.like]: '%' + search_word + '%',
+                },
+              },
+              {
+                nickname: {
+                  [Sequelize.Op.like]: '%' + search_word + '%',
+                },
+              },
+              {
+                id: {
+                  [Sequelize.Op.like]: '%' + search_word + '%',
+                },
+              },
+            ],
+          },
+          order: [[target, sort]],
+        });
+        if (allUserList) {
+          res.header('Access-Control-Expose-Headers', 'X-Total-Count');
+          res.set('X-Total-Count', total);
+          return res.status(200).json(sendUserList);
+        }
       }
     }
   } catch (e) {

@@ -20,9 +20,23 @@ router.get('/:search_word', async (req, res) => {
       raw: true,
       attributes: ['id', 'beer_name', 'beer_img', 'rate'],
       where: {
-        search_word: {
-          [Sequelize.Op.like]: '%' + search_word + '%',
-        },
+        [Sequelize.Op.or]: [
+          {
+            search_word: {
+              [Sequelize.Op.like]: '%' + search_word + '%',
+            },
+          },
+          {
+            beer_name_en: {
+              [Sequelize.Op.like]: '%' + search_word + '%',
+            },
+          },
+          {
+            id: {
+              [Sequelize.Op.like]: '%' + search_word + '%',
+            },
+          },
+        ],
       },
     });
 
