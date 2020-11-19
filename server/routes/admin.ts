@@ -24,8 +24,6 @@ router.get('/beerlist', async (req, res) => {
       const target = String(targetArr[1]);
       const sort = String(sortArr[1]);
       const search_word = searchArr[1];
-      console.log('::::::::searchWord::::::::', search_word);
-      console.log('@@@@@@@', typeof search_word);
 
       // const limit = Number(url.slice(16)[0] + url.slice(16)[1]);
       // const page = Number(url.slice(24)[0]);
@@ -185,6 +183,25 @@ router.get('/beerlist/:id', async (req, res) => {
   }
 });
 
+router.delete('/beerlist/:id', (req, res) => {
+  try {
+    console.log('::::::::::::::', req.params.id);
+    const { id } = req.params;
+    // const test = await Beer.findOne({
+    //   where: { id },
+    //   raw: true,
+    // });
+    // console.log(':::::test:::::', test);
+    Beer.destroy({
+      where: {
+        id: id,
+      },
+    }).then(() => res.status(201).send('delete'));
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+});
+
 //-------------------------------------------------------User
 router.get('/userlist', async (req, res) => {
   try {
@@ -313,11 +330,16 @@ router.put('/userlist/:id', async (req, res) => {
   }
 });
 
-router.delete('/userlist/:id', async (req, res) => {
-  const { id } = req.params;
-  console.log('::::::::::/userlist/:id id::::::::', id);
-  await User.destroy({ where: { id } });
-  res.status(200).send('');
+router.delete('/userlist/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('::::::delete url', req.url);
+    console.log('::::::::::/userlist/:id id::::::::', typeof id);
+    User.destroy({ where: { id } }).then(() => res.status(201).send('delte'));
+    res.status(200).send('');
+  } catch (e) {
+    return res.sendStatus(500);
+  }
 });
 
 //-----------------------------------------------------Report
@@ -354,6 +376,19 @@ router.get('/report', async (req, res) => {
         return res.status(200).json(sendReportList);
       }
     }
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+});
+
+router.delete('/report/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    Report.destroy({
+      where: {
+        id,
+      },
+    }).then(() => res.status(200).send('delete'));
   } catch (e) {
     return res.sendStatus(500);
   }
