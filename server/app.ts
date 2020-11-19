@@ -36,6 +36,7 @@ import Visitors from './models/visitors';
 import { where } from 'sequelize/types';
 import ViewCount from './models/viewCount';
 import mobileRoutes from './routes/mobile';
+import adminRouter from './routes/admin';
 
 const app = express();
 const port = 4000;
@@ -116,6 +117,10 @@ app.use(
       'Content-Type',
       'Accept',
       'Authorization',
+      'Access-Control-Request-Headers',
+      'Access-Control-Allow-Headers',
+      'x-custom-header',
+      'Content-Range',
     ],
   })
 );
@@ -160,6 +165,9 @@ app.use('/comment', commentRouter);
 app.use('/bookmark', bookMarkRouter);
 app.use('/report', reportRouter);
 app.use('/mobile', mobileRoutes);
+
+// Admin Router
+app.use('/admin', adminRouter);
 
 app.get('/auth', (req: Request, res: Response) => {
   let sess: any = req.session;
