@@ -197,8 +197,6 @@ router.delete('/beerlist/:id', (req, res) => {
         id: id,
       },
     }).then(() => res.status(201).send('delete'));
-
-    console.log('여기까지 오나');
   } catch (e) {
     return res.sendStatus(500);
   }
