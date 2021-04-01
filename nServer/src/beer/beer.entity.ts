@@ -1,8 +1,16 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  CreateDateColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Beer {
   @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
   beer_name: string;
 
   @Column()
@@ -52,4 +60,10 @@ export class Beer {
 
   @Column()
   recommend: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @CreateDateColumn()
+  updatedAt: Date;
 }
