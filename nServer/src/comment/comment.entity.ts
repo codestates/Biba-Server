@@ -6,18 +6,21 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class User {
+export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  email: string;
+  comment: string;
 
   @Column()
-  nickname: string;
+  rate: number;
 
   @Column()
-  password: string;
+  user_id: string;
+
+  @Column()
+  beer_id: number;
 
   @CreateDateColumn()
   createdAt: Date;

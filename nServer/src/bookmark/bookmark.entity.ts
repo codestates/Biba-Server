@@ -6,18 +6,15 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class User {
+export class Bookmark {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  email: string;
+  user_id: number;
 
   @Column()
-  nickname: string;
-
-  @Column()
-  password: string;
+  beer_id: number;
 
   @CreateDateColumn()
   createdAt: Date;
