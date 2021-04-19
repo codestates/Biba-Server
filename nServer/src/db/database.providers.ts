@@ -7,10 +7,10 @@ export const databaseProviders = [
       await createConnection({
         type: 'mysql',
         host: 'localhost',
-        port: 53306,
+        port: 3306,
         username: 'root',
-        password: '',
-        database: 'biba',
+        password: '0206',
+        database: 'biba_nest',
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: true,
       }),
